@@ -1,11 +1,12 @@
 {
-    "name": "account",
-    "version": "0.0.1",
-    "private": true,
-    "scripts": {
-        "start": "node server.js"
-    },
-    "dependencies": {
-        "express": "4.x"
-    }
+  "name": "account",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "4.x",
+    "jade": "^1.11.0"
+  }
 }
