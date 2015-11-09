@@ -1,0 +1,1 @@
+exports.secret = '<your secret here>'; // Secret used for securing sessions
