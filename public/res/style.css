@@ -1,0 +1,60 @@
+header {
+    text-align: center;
+    border-bottom: 1px solid #666;
+    background-color: #fff;
+    width: 100%;
+    padding: 4px 0px 4px 0px;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    max-height: 64px;
+}
+
+header img {
+    height: inherit;
+}
+
+footer {
+    border-top: 1px solid #666;
+    background-color: #fff;
+    width: 100%;
+    padding: 4px 0px 4px 0px;
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    text-align: right;
+    max-height: 48px;
+}
+
+footer p {
+    display: inline-block;
+}
+
+#main {
+    margin-top: 64px;
+    margin-bottom: 48px;
+}
+
+.container {
+    max-width: 600px;
+}
+
+.full-width {
+    width: 100%;
+    max-width: 600px;
+}
+
+.half-width {
+    width: 100%;
+    max-width: 300px;
+}
+
+.central {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.override-display {
+    display: block;
+}

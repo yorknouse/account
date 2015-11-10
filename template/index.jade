@@ -1,15 +1,12 @@
-doctype html
-html
-    head
-        meta(charset='utf-8')
-        meta(http-equiv='X-UA-Compatible', content='IE=Edge')
-        meta(name='viewport', content='width=device-width, initial-scale=1')
-        link(rel='stylesheet', href='/res/bootstrap/css/bootstrap.min.css')
-        title Nouse Account
-    body
-        h1 Nouse Account
-        p
-            | Soon you'll be able to use one account to access different parts of Nouse,
-            | including Commenting, Fantasy Football and more.
-        p
-            | Check back to find out when it's available to you!
+extends layout
+
+block content
+
+    p
+        | Soon you'll be able to use one account to access different parts of Nouse,
+        | including Commenting, Fantasy Football and more.
+    p
+        | Check back to find out when it's available to you!
+        
+block actionbuttons
+    a(class='btn btn-default', href='http://www.nouse.co.uk/') Nouse Website
