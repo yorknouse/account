@@ -112,5 +112,7 @@ app.get('/account', isLoggedIn, function (req, res) {
     res.render('account', {user: req.user, email: emailAddr});
 });
 
+
+// Run server
 var server = http.createServer(app);
 server.listen(app.get('port'));
