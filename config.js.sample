@@ -1,1 +1,6 @@
+exports.root = '<your root url here>'; // Root of the site (without trailing /)
+
 exports.secret = '<your secret here>'; // Secret used for securing sessions
+
+exports.googleClientId = '<your google client id here>'; // Both Google keys are used for the authentication session
+exports.googleClientSecret = '<your google client secret here>'; // They are found in Google Cloud Dashboard
