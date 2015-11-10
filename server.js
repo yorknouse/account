@@ -5,7 +5,10 @@
 var express = require('express'),
     path = require('path'),
     http = require('http'),
-    session = require('express-session');
+    session = require('express-session'),
+    cookie = require('cookie-parser'),
+    body = require('body-parser'),
+    passport = require('passport');
 
 var config = require('./config');
 
@@ -16,6 +19,9 @@ app.set('views', path.join(__dirname, 'template'));
 app.set('view engine', 'jade');
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(cookie());
+app.use(body.urlencoded({'extended': true}));
 
 app.use(session({
     key: '',
@@ -31,6 +37,9 @@ app.use(session({
     saveUninitialized: false,
     proxy: null
 }));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.get('/', function (req, res) {
     res.render('index');
