@@ -33,7 +33,7 @@ app.use(session({
     cookie: {
         path: '/',
         httpOnly: true,
-        maxAge: null,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
         secure: false
     },
     name: 'nacc-ses',
