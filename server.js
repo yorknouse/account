@@ -8,7 +8,8 @@ var express = require('express'),
     session = require('express-session'),
     cookie = require('cookie-parser'),
     body = require('body-parser'),
-    passport = require('passport');
+    passport = require('passport'),
+    mysql = require('mysql');
 
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
@@ -41,6 +42,39 @@ app.use(session({
     saveUninitialized: false,
     proxy: null
 }));
+
+// Set-up database access
+var sqlConnection = mysql.createConnection({
+    host: config.mysqlHost,
+    user: config.mysqlUser,
+    password: config.mysqlPass,
+    database: config.mysqlDatabase,
+    port: config.mysqlPort
+});
+
+sqlConnection.connect(function (err) {
+    if (err) {
+        console.log(err.stack);
+        return;
+    }
+    
+    console.log("Connected to database");
+});
+
+// Manage Database accounts
+function findUserGoogle(googleid) {
+    sqlConnection.query('SELECT * FROM `users` WHERE `googid`=?', [googleid], function (err, result, fields) {
+        // If user exists return their information as JSON
+        // If they don't then raise an error
+    });
+}
+
+function findUserEmail(email) {
+    sqlConnection.query('SELECT * FROM `users` WHERE `email`=?', [email], function (err, result, fields) {
+        // If user exists return their information as JSON
+        // If they don't then raise an error
+    });
+}
 
 // Login code
 app.use(passport.initialize());
