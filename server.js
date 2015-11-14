@@ -61,21 +61,33 @@ sqlConnection.connect(function (err) {
     console.log("Connected to database");
 });
 
-// Manage Database accounts
-function findUserGoogle(googleid) {
-    sqlConnection.query('SELECT * FROM `users` WHERE `googid`=?', [googleid], function (err, result, fields) {
-        // If user exists return their information as JSON
-        // If they don't then raise an error
-    });
+// Generate profile from DB row
+function generateProfile(row) {
+    return {
+        'provider': 'nouse',
+        'id': row.idusers,
+        'displayName': row.nick,
+        'name': {
+            'familyName': row.lname,
+            'givenName': row.fname
+        },
+        'emails': [
+            {
+                'value': row.email,
+                'type': 'account'
+            }
+        ],
+        '_activated': row.activated
+    };
 }
 
-function findUserEmail(email) {
-    sqlConnection.query('SELECT * FROM `users` WHERE `email`=?', [email], function (err, result, fields) {
-        // If user exists return their information as JSON
-        // If they don't then raise an error
+// Create a new Profile for the user
+function createProfileFromGoogle(googleprofile) {
+    return sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`users` (`fname`, `lname`, `email`, `googid`, `activated`, `lastLogin`) VALUES ('" + googleprofile.name.givenName + "', '" + googleprofile.name.familyName + "', '" + googleprofile.emails[0].value + "', '" + googleprofile.id + "', '2', NOW())", function (err, result) {
+        if (err === null) return false;
+        return true;
     });
 }
-
 // Login code
 app.use(passport.initialize());
 app.use(passport.session());
@@ -107,14 +119,20 @@ passport.use(new GoogleStrategy({
     realm: config.root
 }, function (accessToken, refreshToken, profile, done) {
     //Verify the callback
-    //For now allow only @nouse.co.uk addresses
-    var i;
-    for (i = 0; i < profile.emails.length; i += 1) {
-        if (profile.emails[i].value.substr(-12) === '@nouse.co.uk') {
-            return done(null, profile);
+    sqlConnection.query('SELECT * FROM `users` WHERE `googid`=?', [profile.id], function (err, rows, fields) {
+        if (rows.length > 0) {
+            return done(null, generateProfile(rows[0]));
         }
-    }
-    return done(null, false);
+        // Account doesn't exist
+        // Create a new one
+        if (createProfileFromGoogle(profile)) {
+            sqlConnection.query('SELECT * FROM `users` WHERE `googid`=?', [profile.id], function (err, rows, fields) {
+                return done(null, generateProfile(rows[0]));
+            });
+        } else {
+            return done(null, false);
+        }
+    });
 }));
 
 app.get('/login/google', passport.authenticate('google' , {
@@ -122,9 +140,13 @@ app.get('/login/google', passport.authenticate('google' , {
 }));
 
 app.get('/login/google/callback', passport.authenticate('google', {
-    successRedirect: '/account',
+    successRedirect: '/continue',
     failureRedirect: '/'
-}))
+}));
+
+app.get('/continue', function(req, res) {
+    res.redirect('/account');
+})
 
 // Logout code
 app.get('/logout', function (req, res) {
