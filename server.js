@@ -145,7 +145,35 @@ app.get('/login/google/callback', passport.authenticate('google', {
 }));
 
 app.get('/continue', function(req, res) {
+    if (req.user._activated === 2) {
+        res.redirect('/signup/terms');
+    }
     res.redirect('/account');
+})
+
+// Account signup
+
+app.get('/signup/abandon', function (req, res) {
+    res.render('abandon');
+});
+
+app.get('/signup/terms', isLoggedIn, function (req, res) {
+    res.render('terms', {
+        terms: "<h1>Test Terms</h1>"
+    });
+});
+
+app.get('/signup/terms/accept', isLoggedIn, function (req, res) {
+    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `activated`='3' WHERE `idusers`='" + req.user.id + "'", function (err, result) {
+        res.redirect('/account');
+    });
+});
+
+app.get('/signup/terms/reject', isLoggedIn, function (req, res) {
+    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`users` WHERE `idusers`='" + req.user.id + "'", function (err, result) {
+        req.logout();
+        res.redirect('/signup/abandon');
+    });
 })
 
 // Logout code

@@ -1,0 +1,12 @@
+extends layout
+
+block content
+    
+    p
+    | Please read the terms below and then make a choice
+    
+    div(class='terms')!= terms
+        
+block actionbuttons
+    a(class='btn btn-primary', href='/signup/terms/accept') Accept
+    a(class='btn btn-default', href='/signup/terms/reject') Reject
