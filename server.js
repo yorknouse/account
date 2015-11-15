@@ -109,6 +109,10 @@ function isLoggedIn(req, res, next) {
     if (req.isAuthenticated()) {
         return next();
     }
+    var dest = req.session.dest;
+    if (!dest) {
+        dest = req.session.dest = req.originalUrl;
+    }
     res.redirect('/login');
 }
 
@@ -117,14 +121,24 @@ function isActivatedUser(req, res, next) {
         if (req.user._activated > 2) {
             return next();
         } else if (req.user._activated === 2) {
+            var dest = req.session.dest;
+            if (!dest) {
+                dest = req.session.dest = req.originalUrl;
+            }
             res.redirect('/signup/terms');
         } else if (req.user._activated === 1) {
             res.redirect('/signup/validate');
         } else {
             res.redirect('/account/suspended');
         }
+    } else {
+        var dest = req.session.dest;
+        if (!dest) {
+            console.log(req.originalUrl);
+            dest = req.session.dest = req.originalUrl;
+        }
+        res.redirect('/login');
     }
-    res.redirect('/login');
 }
 
 app.get('/login', function (req, res) {
@@ -167,10 +181,13 @@ app.get('/login/google/callback', passport.authenticate('google', {
 }));
 
 app.get('/continue', function(req, res) {
-    if (req.user._activated === 2) {
-        res.redirect('/signup/terms');
+    var dest = req.session.dest;
+    if (dest) {
+        delete req.session.dest;
+        res.redirect(dest);
+    } else {
+        res.redirect('/account');
     }
-    res.redirect('/account');
 })
 
 // Account signup
@@ -192,7 +209,7 @@ app.get('/signup/terms/accept', isLoggedIn, function (req, res) {
         updatedUser._activated = 3;
         req.login(updatedUser, function (err) {
             if (updatedUser.displayName === null) {
-                res.reidrect('/account/nickname');
+                res.redirect('/account/nickname');
             } else {
                 res.redirect('/continue');
             }
