@@ -9,7 +9,8 @@ var express = require('express'),
     cookie = require('cookie-parser'),
     body = require('body-parser'),
     passport = require('passport'),
-    mysql = require('mysql');
+    mysql = require('mysql'),
+    bodyparser = require('body-parser');
 
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
@@ -24,7 +25,7 @@ app.set('view engine', 'jade');
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cookie());
-app.use(body.urlencoded({'extended': true}));
+app.use(bodyparser.urlencoded({'extended': true}));
 
 
 // Set-up session storage
@@ -184,7 +185,7 @@ app.get('/signup/terms/accept', isLoggedIn, function (req, res) {
         var updatedUser = req.user;
         updatedUser._activated = 3;
         req.login(updatedUser, function (err) {
-            res.redirect('/account');
+            res.redirect('/continue');
         });
     });
 });
@@ -222,6 +223,24 @@ app.get('/account', isActivatedUser, function (req, res) {
 
 app.get('/account/suspended', isLoggedIn, function (req, res) {
     res.render('suspended');
+});
+
+// Nickname configuration
+app.get('/account/nickname', isActivatedUser, function (req, res) {
+    res.render('nickname', {
+        'nickname': req.user.displayName
+    });
+});
+
+app.post('/account/nickname', isActivatedUser, function (req, res) {
+    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `nick`=? WHERE `idusers`='" + req.user.id + "'", [req.body.nickname], function (err, result) {
+        // Update the User object before redirecting
+        var updatedUser = req.user;
+        updatedUser.displayName = sqlConnection.escape(req.body.nickname).split("'")[1];
+        req.login(updatedUser, function (err) {
+            res.redirect('/continue');
+        });
+    });
 });
 
 

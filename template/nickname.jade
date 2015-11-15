@@ -1,0 +1,15 @@
+extends layout
+
+block content
+    p
+    | Using a nickname means that you won't have to use your full name when writing comments on the Nouse website.  Your nickname can be anything.
+    
+    form(name='nickform', method='post', action='/account/nickname')
+        input(type='text', name='nickname', value=nickname)
+    
+    p
+    | If you choose an inappropriate nickname then we may ask you to pick a new one or suspend your account.  Any changes made to your nickname will only apply to new comments; comments you've already made will use your old nickname.
+
+block actionbuttons
+    a(class='btn btn-primary', onclick='window.document.forms.nickform.submit();') Save
+    a(class='btn btn-default', href='/continue') Skip
