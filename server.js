@@ -191,7 +191,11 @@ app.get('/signup/terms/accept', isLoggedIn, function (req, res) {
         var updatedUser = req.user;
         updatedUser._activated = 3;
         req.login(updatedUser, function (err) {
-            res.redirect('/continue');
+            if (updatedUser.displayName === null) {
+                res.reidrect('/account/nickname');
+            } else {
+                res.redirect('/continue');
+            }
         });
     });
 });
