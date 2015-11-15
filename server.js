@@ -10,7 +10,8 @@ var express = require('express'),
     body = require('body-parser'),
     passport = require('passport'),
     mysql = require('mysql'),
-    bodyparser = require('body-parser');
+    bodyparser = require('body-parser'),
+    mysqlSessionStore = require('express-mysql-session');
 
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
@@ -27,22 +28,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookie());
 app.use(bodyparser.urlencoded({'extended': true}));
 
-
-// Set-up session storage
-app.use(session({
-    key: '',
-    secret: config.secret,
-    cookie: {
-        path: '/',
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 * 7,
-        secure: false
-    },
-    name: 'nacc-ses',
-    resave: false,
-    saveUninitialized: false,
-    proxy: null
-}));
 
 // Set-up database access
 var sqlConnection = mysql.createConnection({
@@ -61,6 +46,25 @@ sqlConnection.connect(function (err) {
     
     console.log("Connected to database");
 });
+
+// Set-up session storage
+var sessionStore = new mysqlSessionStore({}, sqlConnection);
+
+app.use(session({
+    key: '',
+    secret: config.secret,
+    cookie: {
+        path: '/',
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+        secure: false
+    },
+    name: 'nacc-ses',
+    resave: false,
+    saveUninitialized: false,
+    proxy: null,
+    store: sessionStore
+}));
 
 // Generate profile from DB row
 function generateProfile(row) {
@@ -137,7 +141,9 @@ passport.use(new GoogleStrategy({
     //Verify the callback
     sqlConnection.query('SELECT * FROM `users` WHERE `googid`=?', [profile.id], function (err, rows, fields) {
         if (rows.length > 0) {
-            return done(null, generateProfile(rows[0]));
+            sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `lastLogin`=NOW() WHERE `idusers`='" + rows[0].idusers + "'", function (err, result) {
+                return done(null, generateProfile(rows[0]));
+            });
         }
         // Account doesn't exist
         // Create a new one
