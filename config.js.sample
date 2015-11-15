@@ -10,3 +10,5 @@ exports.mysqlPort = 3306; // Port for the MySQL server
 exports.mysqlUser = '<your username here>' // Username for the MySQL account
 exports.mysqlPass = '<your password here>'; // Password for the MySQL account
 exports.mysqlDatabase = '<your database name here>'; // MySQL database name
+
+exports.termsFile = '<relative path to terms file>'; // Path to file displayed when users are agreeing to terms

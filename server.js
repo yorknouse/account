@@ -11,7 +11,8 @@ var express = require('express'),
     passport = require('passport'),
     mysql = require('mysql'),
     bodyparser = require('body-parser'),
-    mysqlSessionStore = require('express-mysql-session');
+    mysqlSessionStore = require('express-mysql-session'),
+    fs = require('fs');
 
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
@@ -197,8 +198,11 @@ app.get('/signup/abandon', function (req, res) {
 });
 
 app.get('/signup/terms', isLoggedIn, function (req, res) {
-    res.render('terms', {
-        terms: "<h1>Test Terms</h1>"
+    fs.readFile(config.termsFile, 'utf8', function (err, content) {
+        if (err) return next(err);
+        res.render('terms', {
+            terms: content
+        });
     });
 });
 
