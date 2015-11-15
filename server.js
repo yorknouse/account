@@ -107,6 +107,21 @@ function isLoggedIn(req, res, next) {
     res.redirect('/login');
 }
 
+function isActivatedUser(req, res, next) {
+    if (req.isAuthenticated()) {
+        if (req.user._activated > 2) {
+            return next();
+        } else if (req.user._activated === 2) {
+            res.redirect('/signup/terms');
+        } else if (req.user._activated === 1) {
+            res.redirect('/signup/validate');
+        } else {
+            res.redirect('/account/suspended');
+        }
+    }
+    res.redirect('/login');
+}
+
 app.get('/login', function (req, res) {
     res.render('login');
 })
@@ -165,7 +180,12 @@ app.get('/signup/terms', isLoggedIn, function (req, res) {
 
 app.get('/signup/terms/accept', isLoggedIn, function (req, res) {
     sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `activated`='3' WHERE `idusers`='" + req.user.id + "'", function (err, result) {
-        res.redirect('/account');
+        // Update the User object before redirecting
+        var updatedUser = req.user;
+        updatedUser._activated = 3;
+        req.login(updatedUser, function (err) {
+            res.redirect('/account');
+        });
     });
 });
 
@@ -174,7 +194,11 @@ app.get('/signup/terms/reject', isLoggedIn, function (req, res) {
         req.logout();
         res.redirect('/signup/abandon');
     });
-})
+});
+
+app.get('/signup/validate', function (req, res) {
+    res.render('validate');
+});
 
 // Logout code
 app.get('/logout', function (req, res) {
@@ -188,12 +212,16 @@ app.get('/', function (req, res) {
 });
 
 // Account Page
-app.get('/account', isLoggedIn, function (req, res) {
+app.get('/account', isActivatedUser, function (req, res) {
     var i, emailAddr;
     for (i = 0; i < req.user.emails.length; i += 1) {
         emailAddr = req.user.emails[i].value;
     }
     res.render('account', {user: req.user, email: emailAddr});
+});
+
+app.get('/account/suspended', isLoggedIn, function (req, res) {
+    res.render('suspended');
 });
 
 

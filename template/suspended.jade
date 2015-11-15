@@ -1,0 +1,13 @@
+extends layout
+
+block content
+    p
+    | Your account has been suspended.
+    
+    p
+    | If you'd like to find out more about this then please 
+    a(href="http://www.nouse.co.uk/about-nouse/contact-us") contact the Tech team
+    | .
+
+block actionbuttons
+    a(class='btn btn-primary', href='/logout') Logout
