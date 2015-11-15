@@ -1,0 +1,21 @@
+doctype html
+html
+    head
+        meta(charset='utf-8')
+        meta(http-equiv='X-UA-Compatible', content='IE=Edge')
+        meta(name='viewport', content='width=device-width, initial-scale=1')
+        link(rel='stylesheet', href='/res/bootstrap/css/bootstrap.min.css')
+        link(rel='stylesheet', href='/res/style.css')
+        title Nouse Account Admin
+        style(type='text/css') .container {max-width: 1008px} header {background-color: #DD0000} table {border-collapse: collapse} td, th {border: 1px dotted #888}
+    body
+        header
+            img(src='/res/nouse/nouse-logo-full.png', alt='Nouse')
+        div(class='container', id='main')
+            block content
+        footer
+            div(class='container')
+                div(class='btn-group', role='group')
+                    a(class='btn btn-default', href='/admin') Main Menu
+                    a(class='btn btn-default', href='/account') Leave Admin
+                    a(class='btn btn-default', href='/logout') Logout

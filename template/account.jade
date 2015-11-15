@@ -11,3 +11,5 @@ block content
 block actionbuttons
     a(class='btn btn-primary', href='/logout') Logout
     a(class='btn btn-default', href='/account/nickname') Change Nickname
+    if user._activated == 9
+        a(class='btn btn-danger', href='/admin') Admin Panel

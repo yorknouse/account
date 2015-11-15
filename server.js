@@ -142,6 +142,15 @@ function isActivatedUser(req, res, next) {
     }
 }
 
+function isAdminUser(req, res, next) {
+    // Must be used after isActivatedUser
+    if (req.user._activated === 9) {
+        return next();
+    } else {
+        res.redirect('/account');
+    }
+}
+
 app.get('/login', function (req, res) {
     res.render('login');
 })
@@ -272,6 +281,25 @@ app.post('/account/nickname', isActivatedUser, function (req, res) {
             res.redirect('/continue');
         });
     });
+});
+
+// Admin Pages
+app.get('/admin', isActivatedUser, isAdminUser, function (req, res) {
+    res.render('admin-index');
+});
+
+app.get('/admin/users', isActivatedUser, isAdminUser, function (req, res) {
+    var low = 0, high = 1000;
+    if (req.query.low) {
+        low = parseInt(req.query.low);
+    }
+    if (req.query.high) {
+        high = parseInt(req.query.high);
+    }
+    sqlConnection.query('SELECT * FROM `users` LIMIT ?, ?', [low, high], function (err, rows, fields) {
+        if (err) throw err;
+        res.render('admin-users', {rows: rows, low: low, high: high});
+    })
 });
 
 
