@@ -4,10 +4,14 @@ CREATE TABLE `nouseaccount`.`users` (
   `lname` VARCHAR(45) NULL,
   `email` VARCHAR(150) NOT NULL,
   `nick` VARCHAR(30) NULL,
-  `googid` VARCHAR(45) NULL,
   `activated` INT NOT NULL DEFAULT 1,
   `lastLogin` DATETIME NULL,
   PRIMARY KEY (`idusers`),
   UNIQUE INDEX `idusers_UNIQUE` (`idusers` ASC),
-  UNIQUE INDEX `email_UNIQUE` (`email` ASC),
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC));
+  
+CREATE TABLE `nouseaccount`.`googleAuth` (
+  `googid` VARCHAR(45) NOT NULL,
+  `idusers` INT NOT NULL,
+  PRIMARY KEY (`googid`),
   UNIQUE INDEX `googid_UNIQUE` (`googid` ASC));
