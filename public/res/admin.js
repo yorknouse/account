@@ -44,4 +44,10 @@ window.document.addEventListener('DOMContentLoaded', function () {
             showConfirmationBox(true, 'Delete this user?', 'This will remove their logins, name and email, but their nickname and other content will remain.', function () {window.location.href='/admin/users/delete?idusers=' + currentlyOperatingUser;});
         });
     }
+    for (var i = 0; i < window.document.getElementsByClassName('na-deletesession').length; i++) {
+        window.document.getElementsByClassName('na-deletesession')[i].addEventListener('click', function (e) {
+            currentlyOperatingUser = this.parentElement.parentElement.getAttribute('data-sessionid');
+            showConfirmationBox(true, 'End this session?', 'The user will be logged out and anything they were doing will be lost.', function () {window.location.href='/admin/sessions/delete?sessionid=' + currentlyOperatingUser;});
+        });
+    }
 });

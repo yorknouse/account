@@ -1,0 +1,27 @@
+extends admin-layout
+
+block content
+    h2 Sessions
+    table
+        thead
+            tr
+                th Session ID
+                th Expiry
+                th Current User
+                th Options
+        tbody
+            each val in rows
+                tr(data-sessionid=val.session_id)
+                    td= val.session_id
+                    td= val.expires
+                    if JSON.parse(val.data).passport.user
+                        td= JSON.parse(val.data).passport.user.displayName
+                    else
+                        td= None
+                    td
+                        a(class='btn btn-default btn-xs na-deletesession')
+                            span(class='glyphicon glyphicon-remove', aria-hidden='true')
+     div(class='btn-group', role='group', style='padding-top:10px;')
+        if low != 0
+            a(class='btn btn-primary', href='?low=' + (low - 1000) + '&high=' + (high - 1000)) Previous Page
+        a(class='btn btn-primary', href='?low=' + (low + 1000) + '&high=' + (high + 1000)) Next Page

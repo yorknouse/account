@@ -359,6 +359,25 @@ app.get('/admin/users/delete/google', isActivatedUser, isAdminUser, function (re
     });
 });
 
+app.get('/admin/sessions', isActivatedUser, isAdminUser, function (req, res) {
+    var low = 0, high = 1000;
+    if (req.query.low) {
+        low = parseInt(req.query.low);
+    }
+    if (req.query.high) {
+        high = parseInt(req.query.high);
+    }
+    sqlConnection.query('SELECT * FROM `sessions` LIMIT ?, ?', [low, high], function (err, rows, fields) {
+        if (err) throw err;
+        res.render('admin-sessions', {rows: rows, low: low, high: high});
+    }); 
+});
+
+app.get('/admin/sessions/delete', isActivatedUser, isAdminUser, function (req, res) {
+    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`sessions` WHERE `session_id`=?", [req.query.sessionid], function (err, result) {
+        res.redirect(req.headers.referer);
+    });
+});
 
 // Run server
 var server = http.createServer(app);
