@@ -12,7 +12,8 @@ var express = require('express'),
     mysql = require('mysql'),
     bodyparser = require('body-parser'),
     mysqlSessionStore = require('express-mysql-session'),
-    fs = require('fs');
+    fs = require('fs'),
+    md5 = require('js-md5');
 
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
@@ -378,6 +379,56 @@ app.get('/admin/sessions/delete', isActivatedUser, isAdminUser, function (req, r
         res.redirect(req.headers.referer);
     });
 });
+
+// API calls for websites
+var apiAuth = function (req, res, next) {
+    var authorization = req.headers.authorization;
+    if (!authorization) return apiAuthUnauth(res);
+    
+    var parts = authorization.split(' ');
+    if (parts.length !== 2) return next(error(400));
+    var scheme = parts[0],
+        credentials = new Buffer(parts[1], 'base64').toString(),
+        index = credentials.indexOf(':');
+    if ('Basic' != scheme || index < 0) return next(error(400));
+    var user = credentials.slice(0, index),
+        pass = credentials.slice(index + 1);
+    
+    sqlConnection.query('SELECT * FROM `apiauth` WHERE `username`=?', [user], function (err, rows, fields) {
+        if (rows.length > 0) {
+            if (rows[0].password == md5(pass)) {
+                var referers = null;
+                if (rows[0].urls !== null) {
+                    referers = rows[0].urls.split(',');
+                }
+                if (referers === null || referers.indexOf(req.headers.referer.split('/')[2]) !== -1) {
+                    next();
+                } else {
+                    return apiAuthUnauth(res);
+                }
+            } else {
+                return apiAuthUnauth(res);
+            }
+        } else {
+            return apiAuthUnauth(res);
+        }
+    });
+}
+
+var apiAuthUnauth = function (res, realm) {
+  res.statusCode = 401;
+  res.setHeader('WWW-Authenticate', 'Basic realm="Authorization required"');
+  res.end('Unauthorized');
+};
+
+app.get('/api/user', apiAuth, isActivatedUser, function (req, res) {
+    res.send({'id':req.user.id, 'email':req.user.emails[0].value, 'displayName':req.user.displayName});
+});
+
+app.get('/api/name', apiAuth, isActivatedUser, function (req, res) {
+    res.send({'id':req.user.id, 'name':req.user.name, 'displayName':req.user.displayName});
+});
+
 
 // Run server
 var server = http.createServer(app);

@@ -15,3 +15,11 @@ CREATE TABLE `nouseaccount`.`googleAuth` (
   `idusers` INT NOT NULL,
   PRIMARY KEY (`googid`),
   UNIQUE INDEX `googid_UNIQUE` (`googid` ASC));
+  
+CREATE TABLE `nouseaccount`.`apiauth` (
+  `idapiauth` INT NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(30) NOT NULL,
+  `password` VARCHAR(32) NOT NULL,
+  `urls` MEDIUMTEXT NULL,
+  PRIMARY KEY (`idapiauth`),
+  UNIQUE INDEX `username_UNIQUE` (`username` ASC));
