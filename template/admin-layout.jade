@@ -8,6 +8,9 @@ html
         link(rel='stylesheet', href='/res/style.css')
         title Nouse Account Admin
         style(type='text/css') .container {max-width: 1008px} header {background-color: #DD0000} table {border-collapse: collapse} td, th {border: 1px dotted #888; padding: 2px 2px 2px 2px}
+        script(src='/res/jquery/jquery-2.2.0.min.js')
+        script(src='/res/bootstrap/js/bootstrap.min.js')
+        script(src='/res/admin.js')
     body
         header
             img(src='/res/nouse/nouse-logo-full.png', alt='Nouse')
@@ -19,3 +22,12 @@ html
                     a(class='btn btn-default', href='/admin') Main Menu
                     a(class='btn btn-default', href='/account') Leave Admin
                     a(class='btn btn-default', href='/logout') Logout
+        div(class='modal fade', id='adminmodal', tabindex='-1', role='dialog')
+            div(class='modal-dialog', role='document')
+                div(class='modal-content')
+                    div(class='modal-header')
+                        button(type='button', class='close', data-dismiss='modal', aria-label='Close')
+                            span(aria-hidden='true') &times;
+                        h4(class='modal-title', id='modalTitle')
+                    div(class='modal-body', id='modalBody')
+                    div(class='modal-footer', id='modalFooter')

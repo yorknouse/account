@@ -12,7 +12,7 @@ block content
                 th E-mail
                 th Activated
                 th Last Login
-                //th Options
+                th Options
         tbody
             each val in rows
                 tr(data-idusers=val.idusers)
@@ -23,11 +23,15 @@ block content
                     td= val.email
                     td= val.activated
                     td= val.lastLogin
-                    //td
-                    //    a(class='btn btn-default')
-                    //        span(class='glyphicon glyphicon-lock', aria-hidden='true')
-                    //    a(class='btn btn-default')
-                    //        span(class='glyphicon glyphicon-remove', aria-hidden='true')
+                    td
+                        if val.activated != 0
+                            a(class='btn btn-default btn-xs na-suspenduser')
+                                span(class='glyphicon glyphicon-lock', aria-hidden='true')
+                        else
+                            a(class='btn btn-default btn-xs na-unsuspenduser')
+                                span(class='glyphicon glyphicon-asterisk', aria-hidden='true')
+                        a(class='btn btn-default btn-xs na-deleteuser')
+                            span(class='glyphicon glyphicon-remove', aria-hidden='true')
     div(class='btn-group', role='group', style='padding-top:10px;')
         if low != 0
             a(class='btn btn-primary', href='?low=' + (low - 1000) + '&high=' + (high - 1000)) Previous Page
