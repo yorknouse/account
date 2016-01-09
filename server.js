@@ -87,17 +87,6 @@ function generateProfile(row) {
     };
 }
 
-// Create a new Profile for the user
-function createProfileFromGoogle(googleprofile) {
-    return sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`users` (`fname`, `lname`, `email`, `activated`, `lastLogin`) VALUES ('" + googleprofile.name.givenName + "', '" + googleprofile.name.familyName + "', '" + googleprofile.emails[0].value + "', '2', NOW())", function (err, result) {
-        if (err !== null) return false;
-        return sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`googleauth` (`googid`, `idusers`) VALUES (?, ?)", [googleprofile.id, result.insertId], function (err2, result2) {
-            if (err2 !== null) return false;
-            return true;
-        });
-    });
-}
-
 // Login code
 app.use(passport.initialize());
 app.use(passport.session());
@@ -166,28 +155,14 @@ passport.use(new GoogleStrategy({
     realm: config.root
 }, function (accessToken, refreshToken, profile, done) {
     //Verify the callback
+    console.log('Google Login');
     sqlConnection.query('SELECT * FROM `googleauth` WHERE `googid`=?', [profile.id], function (err, rows, fields) {
         if (rows.length > 0) {
-            sqlConnection.query('SELECT * FROM `users` WHERE `idusers`=?', [rows[0].idusers], function (err, rows, fields) {
-                sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `lastLogin`=NOW() WHERE `idusers`='" + rows[0].idusers + "'", function (err, result) {
-                    return done(null, generateProfile(rows[0]));
-                });
-            });
+            return done(null, {'provider':'nouse-transition','id': rows[0].idusers, '_googleId': profile.id});
         }
         // Account doesn't exist
-        // Create a new one
-        if (createProfileFromGoogle(profile)) {
-            return sqlConnection.query('SELECT * FROM `googleauth` WHERE `googid`=?', [profile.id], function (err, rows, fields) {
-                console.log(profile.id);
-                console.log(err);
-                console.log(rows);
-                return sqlConnection.query('SELECT * FROM `users` WHERE `idusers`=?', [rows[0].idusers], function (err, rows, fields) {
-                    return done(null, generateProfile(rows[0]));
-                }); 
-            });
-        } else {
-            return done(null, false);
-        }
+        // We'll create a new account later, so set the google account for now (/login/google/continue will understand)
+        return done(null, profile);
     });
 }));
 
@@ -196,9 +171,56 @@ app.get('/login/google', passport.authenticate('google' , {
 }));
 
 app.get('/login/google/callback', passport.authenticate('google', {
-    successRedirect: '/continue',
+    successRedirect: '/login/google/continue',
     failureRedirect: '/'
 }));
+
+app.get('/login/google/continue', function(req, res){
+    console.log('Login Google Continue');
+    if (req.user.provider == 'nouse-transition') {
+        // User already exists so find and update to account
+        sqlConnection.query('SELECT * FROM `users` WHERE `idusers`=?', [req.user.id], function (err, rows, fields) {
+            req.login(generateProfile(rows[0]), function(err) {
+                console.log('Existing user logged in');
+                res.redirect('/login/continue');
+            });
+        });
+    } else {
+        // Provider is Google, account needs to be created
+        sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`users` (`fname`, `lname`, `email`, `activated`, `lastLogin`) VALUES ('" + req.user.name.givenName + "', '" + req.user.name.familyName + "', '" + req.user.emails[0].value + "', '2', NOW())", function (err, result) {
+            console.log(err);
+            if (err === null) {
+                req.login({'provider':'nouse-transition','id':result.insertId, '_googleId':req.user.id}, function(err) {
+                    console.log('New User logged in');
+                    res.redirect('/login/google/link');
+                });
+            } else {
+                // Should never be reached
+                res.redirect('/logout');
+            }
+        });
+    }
+});
+
+app.get('/login/google/link', function(req, res) {
+    console.log('Login Google Link');
+    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`googleauth` (`googid`, `idusers`) VALUES (?, ?)", [req.user._googleId, req.user.id], function (err, result) {
+        if (err !== null) {
+            // Should not be reached
+            res.redirect('/logout');
+        } else {
+            res.redirect('/login/google/continue');
+        }
+    });
+});
+
+app.get('/login/continue', function(req, res) {
+    console.log('Login Continue');
+    // Update last login and continue
+    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `lastLogin`=NOW() WHERE `idusers`='" + req.user.id + "'", function (err, result) {
+        res.redirect('/continue');
+    });
+});
 
 app.get('/continue', function(req, res) {
     var dest = req.session.dest;
