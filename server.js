@@ -484,10 +484,12 @@ var apiAuthUnauth = function (res, realm) {
 };
 
 app.get('/api/user', apiAuth, isActivatedUser, function (req, res) {
+    res.type('application/json');
     res.send({'id':req.user.id, 'email':req.user.emails[0].value, 'displayName':req.user.displayName});
 });
 
 app.get('/api/name', apiAuth, isActivatedUser, function (req, res) {
+    res.type('application/json');
     res.send({'id':req.user.id, 'name':req.user.name, 'displayName':req.user.displayName});
 });
 
