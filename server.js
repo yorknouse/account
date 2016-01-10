@@ -556,7 +556,7 @@ var contentAuth = function (req, res, next) {
     var scheme = parts[0],
         credentials = new Buffer(parts[1], 'base64').toString();
     if ('Public' != scheme) return next(error(400));
-    var user = credentials.slice(0, index);
+    var user = credentials;
     
     sqlConnection.query('SELECT * FROM `apiauth` WHERE `username`=?', [user], function (err, rows, fields) {
         if (rows.length > 0) {
@@ -565,6 +565,10 @@ var contentAuth = function (req, res, next) {
                 referers = rows[0].urls.split(',');
             }
             if (referers === null || (req.headers.referer && referers.indexOf(req.headers.referer.split('/')[2]) !== -1)) {
+                res.header('Access-Control-Allow-Origin', req.headers.origin);
+                res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+                res.header('Access-Control-Allow-Headers', 'Authorization, Cookie');
+                res.header('Access-Control-Allow-Credentials', 'true');
                 next();
             } else {
                 return contentAuthUnauth(res);
@@ -579,6 +583,14 @@ var contentAuthUnauth = function (res, realm) {
   res.statusCode = 401;
   res.end('Unauthorized');
 };
+
+app.options('/content/:shortname', function (req, res) {
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Methods', 'GET');
+    res.header('Access-Control-Allow-Headers', 'Authorization, Cookie');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.send();
+});
 
 app.get('/content/:shortname', contentAuth, function (req, res) {
     sqlConnection.query('SELECT * FROM `content` WHERE `shortname`=?', [req.params.shortname], function (err, rows, fields) {
