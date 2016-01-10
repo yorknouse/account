@@ -577,7 +577,7 @@ var contentAuth = function (req, res, next) {
             return contentAuthUnauth(res);
         }
     });
-}
+};
 
 var contentAuthUnauth = function (res, realm) {
   res.statusCode = 401;
@@ -612,6 +612,46 @@ app.get('/content/:shortname', contentAuth, function (req, res) {
             return error(404);
         }
     });
+});
+
+// Auth (Allow sites to start authentication flow)
+var authAuth = function(req, res, next) {
+    var auth = req.session.auth;
+    if (req.query && req.query.apiuser) {
+        auth = req.session.auth = new Buffer(req.query.apiuser, 'base64').toString()
+    }
+    var referer = req.session.referer;
+    if (referer == null && req.headers.referer) {
+        referer = req.session.referer = req.headers.referer.split('/')[2];
+    }
+    sqlConnection.query('SELECT * FROM `apiauth` WHERE `username`=?', [auth], function (err, rows, fields) {
+        if (rows.length > 0) {
+            var referers = null;
+            if (rows[0].urls !== null) {
+                referers = rows[0].urls.split(',');
+            }
+            console.log(referers);
+            console.log(auth);
+            if (referers === null || referers.indexOf(referer) !== -1) {
+                next();
+            } else {
+                delete req.session.auth;
+                delete req.session.referer;
+                res.statusCode = 401;
+                res.end('Unauthorized');
+            }
+        } else {
+            delete req.session.auth;
+            delete req.session.referer;
+            res.statusCode = 404;
+        }
+    });
+};
+
+app.get('/auth/:scheme/:sitename/:port/msg', authAuth, isActivatedUser, function (req, res) {
+    res.render('auth-msg', {'sitename':req.params.sitename,'scheme':req.params.scheme,'port':req.params.port});
+    delete req.session.auth;
+    delete req.session.referer;
 });
 
 
