@@ -13,7 +13,8 @@ var express = require('express'),
     bodyparser = require('body-parser'),
     mysqlSessionStore = require('express-mysql-session'),
     fs = require('fs'),
-    md5 = require('js-md5');
+    md5 = require('js-md5'),
+    jade = require('jade');
 
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
@@ -442,6 +443,58 @@ app.post('/admin/api/create', isActivatedUser, isAdminUser, function (req, res) 
     }
 });
 
+app.get('/admin/content', isActivatedUser, isAdminUser, function (req, res) {
+    var low = 0, high = 1000;
+    if (req.query.low) {
+        low = parseInt(req.query.low);
+    }
+    if (req.query.high) {
+        high = parseInt(req.query.high);
+    }
+    sqlConnection.query('SELECT * FROM `content` LIMIT ?, ?', [low, high], function (err, rows, fields) {
+        if (err) throw err;
+        res.render('admin-content', {rows: rows, low: low, high: high});
+    });
+});
+
+app.get('/admin/content/create', isActivatedUser, isAdminUser, function (req, res) {
+    res.render('admin-content-create', {'content':{'shortname':'','description':'','login':'','logout':''}});
+});
+
+app.post('/admin/content/create', isActivatedUser, isAdminUser, function (req, res) {
+    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`content` (`shortname`, `description`, `logout`, `login`) VALUES (?, ?, ?, ?)", [req.body.shortname, req.body.description, req.body.logout, req.body.login], function (err, result) {
+        if (err !== null) {
+            res.redirect('/admin/content/create?error=' + err.code);
+        } else {
+            res.redirect('/admin/content');
+        }
+    });
+});
+
+app.get('/admin/content/edit/:idcontent', isActivatedUser, isAdminUser, function (req, res) {
+     sqlConnection.query('SELECT * FROM `content` WHERE `idcontent`=?', [req.params.idcontent], function (err, rows, fields) {
+         if (rows.length > 0) {
+             res.render('admin-content-create', {'content':rows[0]});
+         }
+     });
+});
+
+app.post('/admin/content/edit/:idcontent', isActivatedUser, isAdminUser, function (req, res) {
+    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`content` SET `shortname`=?, `description`=?, `logout`=?, `login`=? WHERE `idcontent`=?", [req.body.shortname, req.body.description, req.body.logout, req.body.login, req.params.idcontent], function (err, result) {
+        if (err !== null) {
+            res.redirect('/admin/content/edit/' + req.params.idcontent + '?error=' + err.code);
+        } else {
+            res.redirect('/admin/content');
+        }
+    });
+});
+
+app.get('/admin/content/delete', isActivatedUser, isAdminUser, function (req, res) {
+    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`content` WHERE `idcontent`=?", [req.query.idcontent], function (err, result) {
+        res.redirect(req.headers.referer);
+    });
+});
+
 // API calls for websites
 var apiAuth = function (req, res, next) {
     var authorization = req.headers.authorization;
@@ -491,6 +544,62 @@ app.get('/api/user', apiAuth, isActivatedUser, function (req, res) {
 app.get('/api/name', apiAuth, isActivatedUser, function (req, res) {
     res.type('application/json');
     res.send({'id':req.user.id, 'name':req.user.name, 'displayName':req.user.displayName});
+});
+
+// Content pages
+var contentAuth = function (req, res, next) {
+    var authorization = req.headers.authorization;
+    if (!authorization) return contentAuthUnauth(res);
+    
+    var parts = authorization.split(' ');
+    if (parts.length !== 2) return next(error(400));
+    var scheme = parts[0],
+        credentials = new Buffer(parts[1], 'base64').toString();
+    if ('Public' != scheme) return next(error(400));
+    var user = credentials.slice(0, index);
+    
+    sqlConnection.query('SELECT * FROM `apiauth` WHERE `username`=?', [user], function (err, rows, fields) {
+        if (rows.length > 0) {
+            var referers = null;
+            if (rows[0].urls !== null) {
+                referers = rows[0].urls.split(',');
+            }
+            if (referers === null || (req.headers.referer && referers.indexOf(req.headers.referer.split('/')[2]) !== -1)) {
+                next();
+            } else {
+                return contentAuthUnauth(res);
+            }
+        } else {
+            return contentAuthUnauth(res);
+        }
+    });
+}
+
+var contentAuthUnauth = function (res, realm) {
+  res.statusCode = 401;
+  res.end('Unauthorized');
+};
+
+app.get('/content/:shortname', contentAuth, function (req, res) {
+    sqlConnection.query('SELECT * FROM `content` WHERE `shortname`=?', [req.params.shortname], function (err, rows, fields) {
+        if (rows.length > 0) {
+            if (req.isAuthenticated() && req.user._activated > 2 && rows[0].login !== '') {
+                // Show logged-in view
+                res.send(jade.render(rows[0].login, {'req':req}));
+            } else if (rows[0].logout !== '') {
+                // Show logged-out view
+                res.send(jade.render(rows[0].logout, {'req':req}));
+            } else {
+                var dest = req.session.dest;
+                if (!dest) {
+                    dest = req.session.dest = req.originalUrl;
+                }
+                res.redirect('/login');
+            }
+        } else {
+            return error(404);
+        }
+    });
 });
 
 

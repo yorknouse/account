@@ -23,3 +23,12 @@ CREATE TABLE `nouseaccount`.`apiauth` (
   `urls` MEDIUMTEXT NULL,
   PRIMARY KEY (`idapiauth`),
   UNIQUE INDEX `username_UNIQUE` (`username` ASC));
+
+CREATE TABLE `nouseaccount`.`content` (
+  `idcontent` INT NOT NULL AUTO_INCREMENT,
+  `shortname` VARCHAR(32) NOT NULL,
+  `description` VARCHAR(80) NULL,
+  `logout` MEDIUMTEXT NULL,
+  `login` MEDIUMTEXT NULL,
+  PRIMARY KEY (`idcontent`),
+  UNIQUE INDEX `shortname_UNIQUE` (`shortname` ASC));

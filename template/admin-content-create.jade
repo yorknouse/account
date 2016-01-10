@@ -1,0 +1,33 @@
+extends admin-layout
+
+block content
+    h2 Create content
+    if error
+        div(class='alert alert-danger', role='alert')
+            if error === 'ER_DUP_ENTRY'
+                p The selected shortname is already in use
+            else
+                p Unknown error #{error} encountered when creating API user
+    form(class='form-horizontal', id='apicontentform', method='post')
+        div(class='form-group')
+            label(for='shortname', class='col-sm-2 control-label') Short name
+            div(class='col-sm-10')
+                input(type='text', maxlength=30, class='form-control', name='shortname', id='shortname', required, value=content.shortname)
+        div(class='form-group')
+            label(for='description', class='col-sm-2 control-label') Description
+            div(class='col-sm-10')
+                input(type='text', class='form-control', name='description', id='description', value=content.description)
+        div(class='form-group')
+            label(for='logout', class='col-sm-2 control-label') Logged-out View
+            div(class='col-sm-10')
+                textarea(class='form-control', name='logout', id='logout')= content.logout
+        div(class='form-group')
+            label(for='login', class='col-sm-2 control-label') Logged-in View
+            div(class='col-sm-10')
+                textarea(class='form-control', name='login', id='login')= content.login
+        div(class='alert alert-info', role='alert')
+            p Leave Logged-out view blank to require login, or leave Logged-in view blank to give the same view to all users.  Views are processed by the Jade template engine.
+        div(class='form-group')
+            div(class='col-sm-offset-2 col-sm-10')
+                a(class='btn btn-default', href='/admin/content') Cancel
+                button(type='submit', class='btn btn-primary') Create

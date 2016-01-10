@@ -1,0 +1,27 @@
+extends admin-layout
+
+block content
+    h2 Content pages
+    table
+        thead
+            tr
+                th Content ID
+                th Short name
+                th Description
+                th Options
+        tbody
+            each val in rows
+                tr(data-idcontent=val.idcontent)
+                    td= val.idcontent
+                    td= val.shortname
+                    td= val.description
+                    td
+                        a(class='btn btn-default btn-xs na-editcontent', href='/admin/content/edit/' + val.idcontent)
+                            span(class='glyphicon glyphicon-pencil', aria-hidden='true')
+                        a(class='btn btn-default btn-xs na-deletecontent')
+                            span(class='glyphicon glyphicon-remove', aria-hidden='true')
+     div(class='btn-group', role='group', style='padding-top:10px;')
+        if low != 0
+            a(class='btn btn-primary', href='?low=' + (low - 1000) + '&high=' + (high - 1000)) Previous Page
+        a(class='btn btn-primary', href='?low=' + (low + 1000) + '&high=' + (high + 1000)) Next Page
+        a(class='btn btn-default', href='/admin/content/create') Create Content

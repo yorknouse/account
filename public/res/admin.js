@@ -168,4 +168,11 @@ window.document.addEventListener('DOMContentLoaded', function () {
             showConfirmationBox(true, 'Delete this API user?', 'This will terminate their API access, and the same login can\'t be generated again.', function () {window.location.href='/admin/api/delete?idapiauth=' + currentlyOperatingUser;});
         });
     }
+    
+    for (var i = 0; i < window.document.getElementsByClassName('na-deletecontent').length; i++) {
+        window.document.getElementsByClassName('na-deletecontent')[i].addEventListener('click', function (e) {
+            currentlyOperatingUser = this.parentElement.parentElement.getAttribute('data-idcontent');
+            showConfirmationBox(true, 'Delete this content?', 'This will become instantly inaccesible', function () {window.location.href='/admin/content/delete?idcontent=' + currentlyOperatingUser;});
+        });
+    }
 });
