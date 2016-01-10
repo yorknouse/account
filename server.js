@@ -380,6 +380,68 @@ app.get('/admin/sessions/delete', isActivatedUser, isAdminUser, function (req, r
     });
 });
 
+app.get('/admin/api', isActivatedUser, isAdminUser, function (req, res) {
+    var low = 0, high = 1000;
+    if (req.query.low) {
+        low = parseInt(req.query.low);
+    }
+    if (req.query.high) {
+        high = parseInt(req.query.high);
+    }
+    sqlConnection.query('SELECT * FROM `apiauth` LIMIT ?, ?', [low, high], function (err, rows, fields) {
+        if (err) throw err;
+        res.render('admin-api', {rows: rows, low: low, high: high});
+    });
+});
+
+app.post('/admin/api/password', isActivatedUser, isAdminUser, function (req, res) {
+    if (req.body.newpassword !== req.body.confirmpassword) {
+        res.status(403).send('Passwords do not match');
+    } else {
+        sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`apiauth` SET `password`=? WHERE `idapiauth`=?", [md5(req.body.newpassword), req.query.idapiauth], function (err, result) {
+            if (err !== null) {
+                res.status(500).send('Failed to update');
+            } else {
+                res.redirect(req.headers.referer);
+            }
+        });
+    }
+});
+
+app.post('/admin/api/urls', isActivatedUser, isAdminUser, function (req, res) {
+    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`apiauth` SET `urls`=? WHERE `idapiauth`=?", [req.body.longtext, req.query.idapiauth], function (err, result) {
+        if (err !== null) {
+            res.status(500).send('Failed to update');
+        } else {
+            res.redirect(req.headers.referer);
+        }
+    });
+});
+
+app.get('/admin/api/delete', isActivatedUser, isAdminUser, function (req, res) {
+    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`apiauth` WHERE `idapiauth`=?", [req.query.idapiauth], function (err, result) {
+        res.redirect(req.headers.referer);
+    });
+});
+
+app.get('/admin/api/create', isActivatedUser, isAdminUser, function (req, res) {
+    res.render('admin-api-create', {'error': req.query.error});
+});
+
+app.post('/admin/api/create', isActivatedUser, isAdminUser, function (req, res) {
+    if (req.body.password !== req.body.confirmpassword) {
+        res.redirect('/admin/api/create?error=PASS_MISMATCH');
+    } else {
+        sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`apiauth` (`username`, `password`, `urls`) VALUES (?, ?, ?)", [req.body.username, md5(req.body.password), req.body.urls], function (err, result) {
+            if (err !== null) {
+                res.redirect('/admin/api/create?error=' + err.code);
+            } else {
+                res.redirect('/admin/api');
+            }
+        });
+    }
+});
+
 // API calls for websites
 var apiAuth = function (req, res, next) {
     var authorization = req.headers.authorization;
@@ -401,7 +463,7 @@ var apiAuth = function (req, res, next) {
                 if (rows[0].urls !== null) {
                     referers = rows[0].urls.split(',');
                 }
-                if (referers === null || referers.indexOf(req.headers.referer.split('/')[2]) !== -1) {
+                if (referers === null || (req.headers.referer && referers.indexOf(req.headers.referer.split('/')[2]) !== -1)) {
                     next();
                 } else {
                     return apiAuthUnauth(res);

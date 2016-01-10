@@ -1,0 +1,29 @@
+extends admin-layout
+
+block content
+    h2 API
+    table
+        thead
+            tr
+                th API ID
+                th Username
+                th Authorised URLs
+                th Options
+        tbody
+            each val in rows
+                tr(data-idapiauth=val.idapiauth)
+                    td= val.idapiauth
+                    td= val.username
+                    td= val.urls
+                    td
+                        a(class='btn btn-default btn-xs na-apipassword')
+                            span(class='glyphicon glyphicon-asterisk', aria-hidden='true')
+                        a(class='btn btn-default btn-xs na-apiurls')
+                            span(class='glyphicon glyphicon-link', aria-hidden='true')
+                        a(class='btn btn-default btn-xs na-deleteapi')
+                            span(class='glyphicon glyphicon-remove', aria-hidden='true')
+     div(class='btn-group', role='group', style='padding-top:10px;')
+        if low != 0
+            a(class='btn btn-primary', href='?low=' + (low - 1000) + '&high=' + (high - 1000)) Previous Page
+        a(class='btn btn-primary', href='?low=' + (low + 1000) + '&high=' + (high + 1000)) Next Page
+        a(class='btn btn-default', href='/admin/api/create') Create API User
