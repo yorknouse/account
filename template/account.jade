@@ -3,10 +3,18 @@ extends layout
 block content
     p
         | You're logged in as #{user.name.givenName} #{user.name.familyName}, and commenting as #{user.displayName}.
-    p
-        | You can now head back to the 
-        a(href='http://www.nouse.co.uk/') Nouse website
-        |  and we'll remember who you are.
+    if act == 'settings'
+        p(class='alert alert-info')
+            | Once you've changed your settings, you'll need to refresh the page you were on for them to appear.
+        p 
+            | If you can't change the setting you'd like to then please 
+            a(href='http://www.nouse.co.uk/about-nouse/contact-us') contact us
+            |.
+    else
+        p
+            | You can now head back to the 
+            a(href='http://www.nouse.co.uk/') Nouse website
+            |  and we'll remember who you are.
 
 block actionbuttons
     a(class='btn btn-primary', href='/logout') Logout

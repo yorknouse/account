@@ -292,7 +292,9 @@ app.get('/account', isActivatedUser, function (req, res) {
     for (i = 0; i < req.user.emails.length; i += 1) {
         emailAddr = req.user.emails[i].value;
     }
-    res.render('account', {user: req.user, email: emailAddr});
+    var act = null;
+    if (req.query.act) act = req.query.act;
+    res.render('account', {'user': req.user, 'email': emailAddr, 'act': act});
 });
 
 app.get('/account/suspended', isLoggedIn, function (req, res) {
