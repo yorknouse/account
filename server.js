@@ -543,6 +543,19 @@ app.get('/api/user', apiAuth, isActivatedUser, function (req, res) {
     res.send({'id':req.user.id, 'email':req.user.emails[0].value, 'displayName':req.user.displayName});
 });
 
+app.get('/api/user/:uid', apiAuth, function (req, res) {
+    // As this exposes a username and email for anyone with a user id, it should only be made from a server
+    sqlConnection.query('SELECT * FROM `users` WHERE `idusers`=?', [req.params.uid], function (err, rows, fields) {
+        if (rows.length > 0) {
+            res.type('application/json');
+            res.send({'id':rows[0].idusers, 'email':rows[0].email, 'displayName':rows[0].nick});
+        } else {
+            res.statusCode = 404;
+            res.end('Not found');
+        }
+    });
+});
+
 app.get('/api/name', apiAuth, isActivatedUser, function (req, res) {
     res.type('application/json');
     res.send({'id':req.user.id, 'name':req.user.name, 'displayName':req.user.displayName});
