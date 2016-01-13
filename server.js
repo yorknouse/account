@@ -569,10 +569,10 @@ app.get('/api/session/:sessionid', apiAuth, function (req, res) {
             var cookieobj = JSON.parse(rows[0].data);
             if (!cookieobj.passport.user) {
                 res.statusCode = 403;
-                res.end({'error': 'No login'});
+                res.end("{'error': 'No login'}");
             } else if (cookieobj.passport.user._activated < 3) {
                 res.statusCode = 403;
-                res.end({'error': 'Suspended'});
+                res.end("{'error': 'Suspended'}");
             } else {
                 res.send({'userid': cookieobj.passport.user.id, 'displayName': cookieobj.passport.user.displayName, 'email': cookieobj.passport.user.emails[0].value});
             }
