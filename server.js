@@ -561,6 +561,29 @@ app.get('/api/name', apiAuth, isActivatedUser, function (req, res) {
     res.send({'id':req.user.id, 'name':req.user.name, 'displayName':req.user.displayName});
 });
 
+app.get('/api/session/:sessionid', apiAuth, function (req, res) {
+    console.log(req.params.sessionid);
+    sqlConnection.query('SELECT * FROM `sessions` WHERE `session_id`=?', [req.params.sessionid], function (err, rows, fields) {
+        if (rows.length > 0) {
+            res.type('application/json');
+            var cookieobj = JSON.parse(rows[0].data);
+            if (!cookieobj.passport.user) {
+                res.statusCode = 403;
+                res.end({'error': 'No login'});
+            } else if (cookieobj.passport.user._activated < 3) {
+                res.statusCode = 403;
+                res.end({'error': 'Suspended'});
+            } else {
+                res.send({'userid': cookieobj.passport.user.id, 'displayName': cookieobj.passport.user.displayName, 'email': cookieobj.passport.user.emails[0].value});
+            }
+        } else {
+            res.type('application/json');
+            res.statusCode = 404;
+            res.end("{'error': 'Not found'}");
+        }
+    });
+});
+
 // Content pages
 var contentAuth = function (req, res, next) {
     var authorization = req.headers.authorization;
