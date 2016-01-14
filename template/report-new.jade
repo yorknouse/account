@@ -1,0 +1,47 @@
+extends layout
+
+block content
+    form(name='report')
+        input(type='hidden', name='type', value=type)
+        input(type='hidden', name='source', value=source)
+        input(type='hidden', name='item', value=item)
+        input(type='hidden', name='userid', value=userid)
+        div(id='stage1')
+            p To help us investigate your report please choose the option which best describes your problem with the content you're reporting
+            div(class='radio')
+              label
+                input(type="radio", name='highlevel', id='highlevel1', value='1', required='required')
+                | It's spam
+            div(class='radio')
+              label
+                input(type="radio", name='highlevel', id='highlevel2', value='2', required='required')
+                | It's inappropriate
+            div(class='radio')
+              label
+                input(type="radio", name='highlevel', id='highlevel3', value='3', required='required')
+                | It's offensive
+            div(class='radio')
+              label
+                input(type="radio", name='highlevel', id='highlevel4', value='4', required='required')
+                | It's about me/someone else
+            div(class='radio')
+              label
+                input(type="radio", name='highlevel', id='highlevel5', value='5', required='required')
+                | It's something not mentioned here
+        div(id='stage2')
+            p If there's anything else you'd like to tell us, please do so below
+            textarea(class='form-control', rows=5, name='details', id='details', placeholder='Optional, but reccomended')
+        div(id='stage3')
+            if userid !== null
+                p Your report will be associated with your account (#{email}), which is where we'll get in touch with you if we need to know more or if you've requested a response.  You'll see a confirmation screen letting you know we've got your report, but we won't email you unless we need to.
+            else
+                p To submit your report you'll either need to login or put your report in an email.  If you login, then we'll associate your report with your account so we can get in touch with you if we've got any questions or if you've asked for a response.  We won't send you a confirmation email though.  If you would rather email us, then we'll give you a template you can copy and paste along with the address to send it to, or a link which will open your email program with a message ready to send.
+
+block actionbuttons
+    a(class='btn btn-default', id='cancel') Cancel
+    if userid !== null
+        button(class='btn btn-primary', id='send', type='submit', form='report', method="post", action='/report/submit') Send report
+    else
+        button(class='btn btn-primary', id='send', type='submit', form='report', method="post", action='/report/submit/email') Email report
+        button(class='btn btn-primary', id='send', type='submit', form='report', method="post", action='/report/submit') Login and send
+        

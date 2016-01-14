@@ -32,3 +32,15 @@ CREATE TABLE `nouseaccount`.`content` (
   `login` MEDIUMTEXT NULL,
   PRIMARY KEY (`idcontent`),
   UNIQUE INDEX `shortname_UNIQUE` (`shortname` ASC));
+  
+CREATE TABLE `nouseaccount`.`report` (
+  `idreport` INT NOT NULL AUTO_INCREMENT,
+  `type` VARCHAR(20) NOT NULL,
+  `source` VARCHAR(70) NOT NULL,
+  `item` VARCHAR(30) NOT NULL,
+  `highlevel` INT NOT NULL,
+  `details` MEDIUMTEXT NULL,
+  `userid` INT NULL,
+  `notes` MEDIUMTEXT NULL,
+  `status` INT NULL,
+  PRIMARY KEY (`idreport`));

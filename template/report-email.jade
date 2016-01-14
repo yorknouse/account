@@ -1,0 +1,16 @@
+extends layout
+
+block content
+    if error
+        div(class='alert alert-danger')
+            p 
+                strong There was a problem sending your report.
+                |   We've included instructions below for sending it by email instead.
+            p Please follow the instructions below to ensure that we recieve your report.
+    p To email your report to us you'll need to use your email client.  If you've got one set up on your device, then you can click the "Open email client" button below which will launch your email client with the message in it.
+    p Otherwise you can copy and paste the text in the box below and send it to "#{email}" with the subject "Content Report".
+    textarea(class='form-control', disabled='disabled')= msg
+
+block actionbuttons
+    a(class='btn btn-default', href='javascript:window.close();') Close
+    a(class='btn btn-primary', href='mailto:' + email + '?subject=Content+Report&body=' + msg.replace(' ', '+')) Open email client

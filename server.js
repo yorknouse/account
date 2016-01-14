@@ -692,6 +692,70 @@ app.get('/auth/:scheme/:sitename/:port/msg', authAuth, isActivatedUser, function
     delete req.session.referer;
 });
 
+// Reporting system
+app.get('/report/new', function (req, res) {
+    if (!req.query.type || !req.query.source || !req.query.item) {
+        res.statusCode = 400;
+        res.end("Report query was malformed");
+    } else {
+        res.render('report-new', {"type":req.query.type, "source":req.query.source, "item":req.query.item, "userid":req.user?req.user.id:null, "email":req.user?req.user.emails[0].value:null});
+    }
+});
+
+app.post('/report/submit', function (req, res, next) {
+    // Store the object in the session, in case we're being asked to log the user in
+    if (!req.body.highlevel && !req.session.report) {
+        res.statusCode = 400;
+        res.end("Report query was malforemd");
+    } else {
+        if (req.body.highlevel) {
+            req.session.report = req.body;
+        }
+        return next();
+    }
+}, isActivatedUser, function (req, res) {
+    if (req.session.report.userid == '') {
+        req.session.report.userid = null;
+    }
+    if (req.session.report.details == '') {
+        req.session.report.details = null;
+    }
+    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`report` (`type`, `source`, `item`, `highlevel`, `details`, `userid`) VALUES (?, ?, ?, ?, ?, ?)", [req.session.report.type.replace(/(<([^>]+)>)/ig,""), req.session.report.source.replace(/(<([^>]+)>)/ig,""), req.session.report.item.replace(/(<([^>]+)>)/ig,""), parseInt(req.session.report.highlevel), req.session.report.details.replace(/(<([^>]+)>)/ig,""), (req.session.report.userid==null)?null:parseInt(req.session.report.userid)], function (err, result) {
+        if (err !== null) {
+            // Success
+            res.render('report-sent');
+            delete req.sesion.report;
+        } else {
+            // Error
+            res.redirect(307, '/report/submit/email?error');
+        }
+    });
+});
+
+app.post('/report/submit/email', function (req, res) {
+    var error = false;
+    if (req.query.error) {
+        error = true;
+    }
+    if (!req.body.highlevel && !req.session.report) {
+        res.statusCode = 400;
+        res.end("Report query was malforemd");
+    } else {
+        var report;
+        if (req.body.highlevel) {
+            report = req.body;
+        } else {
+            report = req.session.report;
+            delete req.session.report;
+        }
+        var msg = "type: " + report.type.replace(/(<([^>]+)>)/ig,"") + ",\r\n";
+        msg += "source: " + report.source.replace(/(<([^>]+)>)/ig,"") + ",\r\n";
+        msg += "item: " + report.item.replace(/(<([^>]+)>)/ig,"") + ",\r\n";
+        msg += "highlevel: " + report.highlevel.replace(/(<([^>]+)>)/ig,"") + ",\r\n";
+        msg += "details: " + report.details.replace(/(<([^>]+)>)/ig,"");
+        res.render('report-email', {"email": config.reportEmail, "error":error, "msg":msg});
+    }
+});
 
 // Run server
 var server = http.createServer(app);
