@@ -27,6 +27,24 @@ block actionbuttons
     if userid !== null
         button(class='btn btn-primary', id='send', type='submit', form='report', onclick='window.document.forms.report.submit();') Send report
     else
-        button(class='btn btn-primary', id='send', type='submit', form='report', onclick='window.document.forms.report.action = "/report/submit/email"; window.document.forms.report.submit();') Email report
+        button(class='btn btn-primary', id='email', type='submit', form='report', onclick='window.document.forms.report.action = "/report/submit/email"; window.document.forms.report.submit();') Email report
         button(class='btn btn-primary', id='send', type='submit', form='report', onclick='window.document.forms.report.submit();') Login and send
-        
+    script.
+        window.document.addEventListener('DOMContentLoaded', function() {
+            window.document.getElementById('stage2').style.display = 'none';
+            window.document.getElementById('stage3').style.display = 'none';
+            window.document.getElementById('send').style.display = 'none';
+            if (window.document.getElementById('email')) {
+                window.document.getElementById('send').style.display = 'none';
+            }
+        });
+        for (var i = 0; i < window.document.getElementsByName('highlevel').length; i++) {
+            window.document.getElementsByName('highlevel')[i].addEventListener('click', function () {
+                window.document.getElementById('stage2').style.display = 'block';
+                window.document.getElementById('stage3').style.display = 'block';
+                window.document.getElementById('send').style.display = 'block';
+                if (window.document.getElementById('email')) {
+                    window.document.getElementById('send').style.display = 'block';
+                }
+            });
+        }
