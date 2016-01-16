@@ -1,7 +1,7 @@
 extends layout
 
 block content
-    form(name='report')
+    form(name='report', method='post', action='/report/submit')
         input(type='hidden', name='type', value=type)
         input(type='hidden', name='source', value=source)
         input(type='hidden', name='item', value=item)
@@ -40,8 +40,8 @@ block content
 block actionbuttons
     a(class='btn btn-default', id='cancel') Cancel
     if userid !== null
-        button(class='btn btn-primary', id='send', type='submit', form='report', method="post", action='/report/submit') Send report
+        button(class='btn btn-primary', id='send', type='submit', form='report', onclick='window.document.forms.report.submit();') Send report
     else
-        button(class='btn btn-primary', id='send', type='submit', form='report', method="post", action='/report/submit/email') Email report
-        button(class='btn btn-primary', id='send', type='submit', form='report', method="post", action='/report/submit') Login and send
+        button(class='btn btn-primary', id='send', type='submit', form='report', onclick='window.document.forms.report.action = "/report/submit/email"; window.document.forms.report.submit();') Email report
+        button(class='btn btn-primary', id='send', type='submit', form='report', onclick='window.document.forms.report.submit();') Login and send
         

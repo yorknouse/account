@@ -702,6 +702,26 @@ app.get('/report/new', function (req, res) {
     }
 });
 
+var submitReport = function (req, res) {
+    if (req.session.report.userid == '') {
+        req.session.report.userid = req.user.id;
+    }
+    if (req.session.report.details == '') {
+        req.session.report.details = null;
+    }
+    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`report` (`type`, `source`, `item`, `highlevel`, `details`, `userid`) VALUES (?, ?, ?, ?, ?, ?)", [req.session.report.type.replace(/(<([^>]+)>)/ig,""), req.session.report.source.replace(/(<([^>]+)>)/ig,""), req.session.report.item.replace(/(<([^>]+)>)/ig,""), parseInt(req.session.report.highlevel), (req.session.report.details==null)?null:req.session.report.details.replace(/(<([^>]+)>)/ig,""), (req.session.report.userid==null)?null:parseInt(req.session.report.userid)], function (err, result) {
+        console.log(err);
+        if (err === null) {
+            // Success
+            res.render('report-sent');
+            delete req.session.report;
+        } else {
+            // Error
+            res.redirect(307, '/report/submit/email?error=1');
+        }
+    });
+};
+
 app.post('/report/submit', function (req, res, next) {
     // Store the object in the session, in case we're being asked to log the user in
     if (!req.body.highlevel && !req.session.report) {
@@ -713,24 +733,9 @@ app.post('/report/submit', function (req, res, next) {
         }
         return next();
     }
-}, isActivatedUser, function (req, res) {
-    if (req.session.report.userid == '') {
-        req.session.report.userid = null;
-    }
-    if (req.session.report.details == '') {
-        req.session.report.details = null;
-    }
-    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`report` (`type`, `source`, `item`, `highlevel`, `details`, `userid`) VALUES (?, ?, ?, ?, ?, ?)", [req.session.report.type.replace(/(<([^>]+)>)/ig,""), req.session.report.source.replace(/(<([^>]+)>)/ig,""), req.session.report.item.replace(/(<([^>]+)>)/ig,""), parseInt(req.session.report.highlevel), req.session.report.details.replace(/(<([^>]+)>)/ig,""), (req.session.report.userid==null)?null:parseInt(req.session.report.userid)], function (err, result) {
-        if (err !== null) {
-            // Success
-            res.render('report-sent');
-            delete req.sesion.report;
-        } else {
-            // Error
-            res.redirect(307, '/report/submit/email?error');
-        }
-    });
-});
+}, isActivatedUser, submitReport);
+
+app.get('/report/submit', isActivatedUser, submitReport);
 
 app.post('/report/submit/email', function (req, res) {
     var error = false;
