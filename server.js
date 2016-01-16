@@ -335,7 +335,7 @@ app.get('/admin/users', isActivatedUser, isAdminUser, function (req, res) {
     }
     sqlConnection.query('SELECT * FROM `users` LIMIT ?, ?', [low, high], function (err, rows, fields) {
         if (err) throw err;
-        res.render('admin-users', {rows: rows, low: low, high: high});
+        res.render('admin-users', {rows: rows, low: low, high: high, activationStatus: config.userActivationStatus});
     });
 });
 

@@ -17,3 +17,5 @@ exports.reportEmail = '<email address for abuse reports>'; // Email address used
 
 exports.sendgridAPIuser = '<your sendgrid username here>'; // Username for the account associated with the API key below
 exports.sendgridAPIkey = '<your sendgrid API key here>'; // SendGrid API key with access to the SendMail permission
+
+exports.userActivationStatus = ['<Suspended>', '<Unverified>', '<Unapproved>', '<Activated>', '<User defined level 1>', '<User defined level 2>', '<User defined level 3>', '<User defined level 4>', '<Report handler>', '<Administrator>']; // Names for activation statuses or null if not in use

@@ -21,7 +21,7 @@ block content
                     td= val.lname
                     td= val.nick
                     td= val.email
-                    td= val.activated
+                    td= activationStatus[val.activated]
                     td= val.lastLogin
                     td
                         if val.activated != 0
