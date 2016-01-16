@@ -333,9 +333,16 @@ app.get('/admin/users', isActivatedUser, isAdminUser, function (req, res) {
     if (req.query.high) {
         high = parseInt(req.query.high);
     }
-    sqlConnection.query('SELECT * FROM `users` LIMIT ?, ?', [low, high], function (err, rows, fields) {
+    var field = null, q = null;
+    if (req.query.field) {
+        field = req.query.field;
+    }
+    if (req.query.q) {
+        q = req.query.q;
+    }
+    sqlConnection.query('SELECT * FROM `users` ' + (field?'WHERE `' + field + '` LIKE ? ':'') + 'LIMIT ?, ?', field?[q, low, high]:[low, high], function (err, rows, fields) {
         if (err) throw err;
-        res.render('admin-users', {rows: rows, low: low, high: high, activationStatus: config.userActivationStatus});
+        res.render('admin-users', {rows: rows, low: low, high: high, activationStatus: config.userActivationStatus, field: field, q: q});
     });
 });
 
