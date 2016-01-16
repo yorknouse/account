@@ -11,10 +11,12 @@ CREATE TABLE `nouseaccount`.`users` (
   UNIQUE INDEX `email_UNIQUE` (`email` ASC));
   
 CREATE TABLE `nouseaccount`.`googleAuth` (
-  `googid` VARCHAR(45) NOT NULL,
-  `idusers` INT NOT NULL,
-  PRIMARY KEY (`googid`),
-  UNIQUE INDEX `googid_UNIQUE` (`googid` ASC));
+    `googid` VARCHAR(45) NOT NULL,
+    `idusers` INT NOT NULL,
+    `email` VARCHAR(150) NOT NULL,
+    PRIMARY KEY (`googid`),
+    UNIQUE INDEX `googid_UNIQUE` (`googid` ASC)),
+    UNIQUE INDEX `email_UNIQUE` (`email` ASC));
   
 CREATE TABLE `nouseaccount`.`apiauth` (
   `idapiauth` INT NOT NULL AUTO_INCREMENT,

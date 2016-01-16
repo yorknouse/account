@@ -193,7 +193,7 @@ app.get('/login/google/continue', function(req, res){
         sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`users` (`fname`, `lname`, `email`, `activated`, `lastLogin`) VALUES ('" + req.user.name.givenName + "', '" + req.user.name.familyName + "', '" + req.user.emails[0].value + "', '2', NOW())", function (err, result) {
             console.log(err);
             if (err === null) {
-                req.login({'provider':'nouse-transition','id':result.insertId, '_googleId':req.user.id}, function(err) {
+                req.login({'provider':'nouse-transition','id':result.insertId, '_googleId':req.user.id, 'emails':[{'value':req.user.emails[0].value}]}, function(err) {
                     console.log('New User logged in');
                     res.redirect('/login/google/link');
                 });
@@ -207,7 +207,7 @@ app.get('/login/google/continue', function(req, res){
 
 app.get('/login/google/link', function(req, res) {
     console.log('Login Google Link');
-    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`googleauth` (`googid`, `idusers`) VALUES (?, ?)", [req.user._googleId, req.user.id], function (err, result) {
+    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`googleauth` (`googid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.user._googleId, req.user.id, req.user.emails[0].value], function (err, result) {
         if (err !== null) {
             // Should not be reached
             res.redirect('/logout');
