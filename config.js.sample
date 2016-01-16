@@ -14,3 +14,6 @@ exports.mysqlDatabase = '<your database name here>'; // MySQL database name
 exports.termsFile = '<relative path to terms file>'; // Path to file displayed when users are agreeing to terms
 
 exports.reportEmail = '<email address for abuse reports>'; // Email address used for emailing reports to and shown in reports to user who aren't logged in
+
+exports.sendgridAPIuser = '<your sendgrid username here>'; // Username for the account associated with the API key below
+exports.sendgridAPIkey = '<your sendgrid API key here>'; // SendGrid API key with access to the SendMail permission

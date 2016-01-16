@@ -2,6 +2,8 @@
 
 // Import Modules
 
+var config = require('./config');
+
 var express = require('express'),
     path = require('path'),
     http = require('http'),
@@ -14,11 +16,10 @@ var express = require('express'),
     mysqlSessionStore = require('express-mysql-session'),
     fs = require('fs'),
     md5 = require('js-md5'),
-    jade = require('jade');
+    jade = require('jade'),
+    sendgrid = require('sendgrid')(config.sendgridAPIkey);
 
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
-
-var config = require('./config');
 
 var app = express();
 
@@ -765,6 +766,18 @@ var submitReport = function (req, res) {
         console.log(err);
         if (err === null) {
             // Success
+            // Send a message to alert the team about the report
+            var email = new sendgrid.Email({
+                "to": config.reportEmail,
+                "from": req.user.emails[0].value,
+                "subject": "Content Report",
+                "text": "A new content report for " + req.session.report.type.replace(/(<([^>]+)>)/ig,"") + req.session.report.item.replace(/(<([^>]+)>)/ig,"") + " at " + req.session.report.source.replace(/(<([^>]+)>)/ig,"") + ".  The user reported this as '" + reportReasons[parseInt(req.session.report.highlevel)] + "'\r\n\r\nThis report can be viewed at " + config.root + "/admin/report/item/" + result.insertId + ".\r\n\r\nRegards\r\n\r\nNouse Account Team"
+            });
+            sendgrid.send(email, function (err, json) {
+                if (err) console.log(err);
+                console.log(json);
+            })
+            // Display confirmation to the user
             res.render('report-sent');
             delete req.session.report;
         } else {
