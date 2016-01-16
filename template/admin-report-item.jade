@@ -1,0 +1,50 @@
+extends admin-layout
+
+block content
+    h2 Report
+    if error
+        if error=='S_OK'
+            div(class='alert alert-success', role='alert')
+                p Report updated
+        else
+            div(class='alert alert-danger', role='alert')
+                p Unknown error #{error} encountered when submitting report
+    form(name='report', method='post', class='form-horizontal')
+        div(class='form-group')
+            label(class='col-sm-2 control-label') Type
+            div(class='col-sm-10')
+                p(class='form-control-static')= report.type
+        div(class='form-group')
+            label(class='col-sm-2 control-label') Source
+            div(class='col-sm-10')
+                p(class='form-control-static')= report.source
+        div(class='form-group')
+            label(class='col-sm-2 control-label') Item
+            div(class='col-sm-10')
+                p(class='form-control-static')= report.item
+        div(class='form-group')
+            label(class='col-sm-2 control-label') User ID
+            div(class='col-sm-10')
+                p(class='form-control-static')= report.userid
+        div(class='form-group')
+            label(class='col-sm-2 control-label') Reason
+            div(class='col-sm-10')
+                p(class='form-control-static')= reasons[report.highlevel]
+        div(class='form-group')
+            label(class='col-sm-2 control-label') Details
+            div(class='col-sm-10')
+                p(class='form-control-static')= report.details
+        div(class='form-group')
+            label(for='status', class='col-sm-2 control-label') Status
+            div(class='col-sm-10')
+                select(class='form-control', name='status', required='required')
+                    for val in statuses
+                        option(value=statuses.indexOf(val), selected=(report.status == statuses.indexOf(val)))= val
+        div(class='form-group')
+            label(for='notes', class='col-sm-2 control-label') Notes
+            div(class='col-sm-10')
+                textarea(class='form-control', rows=5, name='notes', id='notes')
+        div(class='form-group')
+            div(class='col-sm-offset-2 col-sm-10')
+                a(class='btn btn-default', href='/admin/report') Back
+                button(type='submit', class='btn btn-primary') Update

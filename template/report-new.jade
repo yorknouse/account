@@ -8,26 +8,11 @@ block content
         input(type='hidden', name='userid', value=userid)
         div(id='stage1')
             p To help us investigate your report please choose the option which best describes your problem with the content you're reporting
-            div(class='radio')
-              label
-                input(type="radio", name='highlevel', id='highlevel1', value='1', required='required')
-                | It's spam
-            div(class='radio')
-              label
-                input(type="radio", name='highlevel', id='highlevel2', value='2', required='required')
-                | It's inappropriate
-            div(class='radio')
-              label
-                input(type="radio", name='highlevel', id='highlevel3', value='3', required='required')
-                | It's offensive
-            div(class='radio')
-              label
-                input(type="radio", name='highlevel', id='highlevel4', value='4', required='required')
-                | It's about me/someone else
-            div(class='radio')
-              label
-                input(type="radio", name='highlevel', id='highlevel5', value='5', required='required')
-                | It's something not mentioned here
+            for val in reasons
+                div(class='radio')
+                    label
+                        input(type="radio", name='highlevel', id='highlevel' + reasons.indexOf(val), value=reasons.indexOf(val), required='required')
+                        | #{val}
         div(id='stage2')
             p If there's anything else you'd like to tell us, please do so below
             textarea(class='form-control', rows=5, name='details', id='details', placeholder='Optional, but reccomended')

@@ -497,6 +497,58 @@ app.get('/admin/content/delete', isActivatedUser, isAdminUser, function (req, re
     });
 });
 
+var reportReasons = ['It\'s spam', 'It\'s inappropriate', 'It\'s offensive', 'It\'s about me/someone else', 'It\'s something not mentioned here'];
+var reportStatuses = ['New', 'Investigating', 'Awaiting Info', 'Awaiting decision', 'Closed (Forwarded)', 'Closed (Removed)', 'Closed (Edited)', 'Closed (Rejected)'];
+
+app.get('/admin/report', isActivatedUser, isAdminUser, function (req, res) {
+    var low = 0, high = 1000;
+    if (req.query.low) {
+        low = parseInt(req.query.low);
+    }
+    if (req.query.high) {
+        high = parseInt(req.query.high);
+    }
+    sqlConnection.query('SELECT * FROM `report` ORDER BY `status` LIMIT ?, ?', [low, high], function (err, rows, fields) {
+        if (err) throw err;
+        res.render('admin-report', {rows: rows, low: low, high: high, statuses: reportStatuses, reasons: reportReasons});
+    });
+});
+
+app.get('/admin/report/create', isActivatedUser, isAdminUser, function (req, res) {
+    res.render('admin-report-create', {reasons: reportReasons, error:req.query.error?req.query.error:null});
+});
+
+app.post('/admin/report/create', isActivatedUser, isAdminUser, function (req, res) {
+    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`report` (`type`, `source`, `item`, `highlevel`, `details`, `userid`) VALUES (?, ?, ?, ?, ?, ?)", [req.body.type.replace(/(<([^>]+)>)/ig,""), req.body.source.replace(/(<([^>]+)>)/ig,""), req.body.item.replace(/(<([^>]+)>)/ig,""), parseInt(req.body.highlevel), (req.body.details==null)?null:req.body.details.replace(/(<([^>]+)>)/ig,""), (req.body.userid==null)?null:parseInt(req.body.userid)], function (err, result) {
+        console.log(err);
+        if (err === null) {
+            // Success
+            res.redirect('/admin/report/item/' + result.insertId);
+        } else {
+            // Error
+            res.redirect('/admin/report/create?error=' + err.code);
+        }
+    });
+});
+
+app.get('/admin/report/item/:reportid', isActivatedUser, isAdminUser, function (req, res) {
+    sqlConnection.query('SELECT * FROM `report` WHERE `idreport`=?', [req.params.reportid], function (err, rows, fields) {
+         if (rows.length > 0) {
+             res.render('admin-report-item', {'report':rows[0], "statuses": reportStatuses, "reasons": reportReasons, "error":req.query.error?req.query.error:null});
+         }
+     });
+});
+
+app.post('/admin/report/item/:reportid', isActivatedUser, isAdminUser, function (req, res) {
+    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`report` SET `notes`=?, `status`=? WHERE `idreport`=?", [req.body.notes, req.body.status, req.params.reportid], function (err, result) {
+        if (err !== null) {
+            res.redirect('/admin/report/item/' + req.params.reportid + '?error=' + err.code);
+        } else {
+            res.redirect('/admin/report/item/' + req.params.reportid + '?error=S_OK');
+        }
+    });
+});
+
 // API calls for websites
 var apiAuth = function (req, res, next) {
     var authorization = req.headers.authorization;
@@ -698,7 +750,7 @@ app.get('/report/new', function (req, res) {
         res.statusCode = 400;
         res.end("Report query was malformed");
     } else {
-        res.render('report-new', {"type":req.query.type, "source":req.query.source, "item":req.query.item, "userid":req.user?req.user.id:null, "email":req.user?req.user.emails[0].value:null});
+        res.render('report-new', {"type":req.query.type, "source":req.query.source, "item":req.query.item, "userid":req.user?req.user.id:null, "email":req.user?req.user.emails[0].value:null,"reasons":reportReasons});
     }
 });
 

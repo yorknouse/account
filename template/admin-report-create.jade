@@ -1,0 +1,37 @@
+extends admin-layout
+
+block content
+    if error
+        div(class='alert alert-danger', role='alert')
+            p Unknown error #{error} encountered when submitting report
+    form(name='report', method='post', class='form-horizontal')
+        div(class='form-group')
+            label(for='type', class='col-sm-2 control-label') Type
+            div(class='col-sm-10')
+                input(type='text', name='type', class='form-control', required='required')
+        div(class='form-group')
+            label(for='source', class='col-sm-2 control-label') Source
+            div(class='col-sm-10')
+                input(type='text', name='source', class='form-control', required='required')
+        div(class='form-group')
+            label(for='item', class='col-sm-2 control-label') Item
+            div(class='col-sm-10')
+                input(type='text', name='item', class='form-control', required='required')
+        div(class='form-group')
+            label(for='userid', class='col-sm-2 control-label') User ID
+            div(class='col-sm-10')
+                input(type='number', name='userid', class='form-control')
+        div(class='form-group')
+            label(for='highlevel', class='col-sm-2 control-label') Reason
+            div(class='col-sm-10')
+                select(class='form-control', name='highlevel', required='required')
+                    for val in reasons
+                        option(value=reasons.indexOf(val))= val
+        div(class='form-group')
+            label(for='details', class='col-sm-2 control-label') Details
+            div(class='col-sm-10')
+                textarea(class='form-control', rows=5, name='details', id='details', placeholder='Optional, but reccomended')
+        div(class='form-group')
+            div(class='col-sm-offset-2 col-sm-10')
+                a(class='btn btn-default', href='/admin/report') Cancel
+                button(type='submit', class='btn btn-primary') Create

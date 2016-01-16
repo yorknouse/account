@@ -42,5 +42,5 @@ CREATE TABLE `nouseaccount`.`report` (
   `details` MEDIUMTEXT NULL,
   `userid` INT NULL,
   `notes` MEDIUMTEXT NULL,
-  `status` INT NULL,
+  `status` INT NULL DEFAULT 0,
   PRIMARY KEY (`idreport`));
