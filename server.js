@@ -364,6 +364,24 @@ app.get('/admin/users/delete/google', isActivatedUser, isAdminUser, function (re
     });
 });
 
+app.get('/admin/users/edit/:userid', isActivatedUser, isAdminUser, function (req, res) {
+    sqlConnection.query('SELECT * FROM `users` WHERE `idusers`=?', [req.params.userid], function (err, rows, fields) {
+         if (rows.length > 0) {
+             res.render('admin-users-edit', {'user':rows[0], 'activationStatus':config.userActivationStatus, 'error':req.query.error?req.query.error:null});
+         }
+     });
+});
+
+app.post('/admin/users/edit/:userid', isActivatedUser, isAdminUser, function (req, res) {
+    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `fname`=?, `lname`=?, `nick`=?, `email`=?, `activated`=? WHERE `idusers`=?", [req.body.fname, req.body.lname, req.body.nick, req.body.email, req.body.activated, req.params.userid], function (err, result) {
+        if (err !== null) {
+            res.redirect('/admin/users/edit/' + req.params.idcontent + '?error=' + err.code);
+        } else {
+            res.redirect('/admin/users');
+        }
+    });
+});
+
 app.get('/admin/sessions', isActivatedUser, isAdminUser, function (req, res) {
     var low = 0, high = 1000;
     if (req.query.low) {

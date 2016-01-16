@@ -30,6 +30,8 @@ block content
                         else
                             a(class='btn btn-default btn-xs na-unsuspenduser')
                                 span(class='glyphicon glyphicon-ban-circle', aria-hidden='true')
+                        a(class='btn btn-default btn-xs na-edituser', href='/admin/users/edit/' + val.idusers)
+                            span(class='glyphicon glyphicon-pencil', aria-hidden='true')
                         a(class='btn btn-default btn-xs na-deleteuser')
                             span(class='glyphicon glyphicon-remove', aria-hidden='true')
     div(class='btn-group', role='group', style='padding-top:10px;')
