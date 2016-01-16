@@ -8,6 +8,7 @@ header {
     top: 0px;
     left: 0px;
     max-height: 64px;
+    z-index: 1000;
 }
 
 header img {

@@ -23,7 +23,7 @@ block content
                 p To submit your report you'll either need to login or put your report in an email.  If you login, then we'll associate your report with your account so we can get in touch with you if we've got any questions or if you've asked for a response.  We won't send you a confirmation email though.  If you would rather email us, then we'll give you a template you can copy and paste along with the address to send it to, or a link which will open your email program with a message ready to send.
 
 block actionbuttons
-    a(class='btn btn-default', id='cancel') Cancel
+    a(class='btn btn-default', id='cancel', onclick='window.close();') Cancel
     if userid !== null
         button(class='btn btn-primary', id='send', type='submit', form='report', onclick='window.document.forms.report.submit();') Send report
     else

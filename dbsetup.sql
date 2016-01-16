@@ -35,9 +35,9 @@ CREATE TABLE `nouseaccount`.`content` (
   
 CREATE TABLE `nouseaccount`.`report` (
   `idreport` INT NOT NULL AUTO_INCREMENT,
-  `type` VARCHAR(20) NOT NULL,
-  `source` VARCHAR(70) NOT NULL,
-  `item` VARCHAR(30) NOT NULL,
+  `type` VARCHAR(30) NOT NULL,
+  `source` VARCHAR(200) NOT NULL,
+  `item` VARCHAR(40) NOT NULL,
   `highlevel` INT NOT NULL,
   `details` MEDIUMTEXT NULL,
   `userid` INT NULL,
