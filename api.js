@@ -3,7 +3,8 @@
 var config = require('./config'),
     db = require('./db');
 
-var sqlConnection = db.sqlConnection();
+var sqlConnection = db.sqlConnection(),
+    md5 = require('js-md5');
 
 // API auth
 exports.auth = function (req, res, next) {

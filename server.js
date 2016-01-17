@@ -129,6 +129,17 @@ app.get('/login/google/callback', passport.authenticate('google', {
 
 app.get('/login/google/continue', login.googleContinue);
 app.get('/login/google/link', login.googleLink);
+
+// Login code for Local
+passport.use(login.localStrategy);
+
+app.get('/login/local', login.localGet);
+app.post('/login/local', passport.authenticate('local', {failureRedirect: '/login/local?error=1'}), login.localPost);
+app.get('/register', login.registerGet);
+app.post('/register', login.registerPost, login.registerLink, login.registerLogin);
+app.get('/register/activate', login.registerActivateGet);
+app.post('/register/activate', login.registerActivatePost, login.registerActivateConfirm);
+
 app.get('/login/continue', login.continue);
 
 app.get('/continue', function(req, res) {
@@ -147,6 +158,7 @@ app.get('/signup/terms', isLoggedIn, signup.terms);
 app.get('/signup/terms/accept', isLoggedIn, signup.termsAccept);
 app.get('/signup/terms/reject', isLoggedIn, signup.termsReject);
 app.get('/signup/validate', signup.validate);
+app.get('/signup/activate', signup.activate, signup.activateConfirm);
 
 // Logout code
 app.get('/logout', login.logout);

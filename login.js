@@ -3,7 +3,12 @@
 var config = require('./config'),
     db = require('./db');
 
-var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy,
+    LocalStrategy = require('passport-local'),
+    md5 = require('js-md5'),
+    randomstring = require('randomstring'),
+    sendgrid = require('sendgrid')(config.sendgridAPIkey),
+    jade = require('jade');
 
 var sqlConnection = db.sqlConnection();
 
@@ -76,6 +81,122 @@ exports.googleLink = function(req, res) {
         } else {
             res.redirect('/login/google/continue');
         }
+    });
+};
+
+// Local login code
+exports.localStrategy = new LocalStrategy(function (username, password, done) {
+    // Find user in database
+    sqlConnection.query('SELECT * FROM `localauth` WHERE `email`=?', [username], function (err, rows, fields) {
+        if (rows.length > 0) {
+            if (rows[0].password === md5(password + rows[0].salt)) {
+                return done(null, {'provider':'nouse-transition','id': rows[0].idusers});
+            } else {
+                return done(null, false);
+            }
+        } else {
+            if (err) return done(err, false);
+            return done(null, false);
+        }
+    });
+});
+
+exports.localGet = function (req, res) {
+    res.render('login-local', {error: req.query.error?req.query.error:null});
+};
+
+exports.localPost = function (req, res) {
+    if (req.user.provider == 'nouse-transition') {
+        // User already exists so find and update to account
+        sqlConnection.query('SELECT * FROM `users` WHERE `idusers`=?', [req.user.id], function (err, rows, fields) {
+            req.login(generateProfile(rows[0]), function(err) {
+                res.redirect('/login/continue');
+            });
+        });
+    } else {
+        res.redirect(303, '/login/local?error=1');
+    }
+};
+
+// Local registration
+exports.registerGet = function (req, res) {
+    res.render('register', {error:req.query.error?req.query.error:null});
+};
+
+exports.registerPost = function (req, res, next) {
+    if (req.body.password === req.body.confirm) {
+        sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`users` (`fname`, `lname`, `email`, `lastLogin`) VALUES (?, ?, ?, NOW())", [req.body.fname, req.body.lname, req.body.username],function (err, result) {
+            if (err === null) {
+                req.login({'provider':'nouse-transition','id':result.insertId}, function(err) {
+                    return next();
+                });
+            } else {
+                console.log(err);
+                res.redirect('/register?error=' + err.code);
+            }
+        });
+    } else {
+        res.redirect('/register?error=PASSWORD_MISMATCH');
+    }
+};
+
+exports.registerLink = function (req, res, next) {
+    var salt = randomstring.generate(30);
+    var activationcode = randomstring.generate({length: 8, charset: 'numeric'});
+    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`localauth` (`email`, `password`, `salt`, `idusers`, `activationcode`) VALUES (?, ?, ?, ?, ?)", [req.body.username, md5(req.body.password + salt), salt, req.user.id, activationcode], function (err, result) {
+        if (err === null) {
+            var email = new sendgrid.Email({
+                "to": req.body.username,
+                "toname": req.body.fname + ' ' + req.body.lname,
+                "from": config.supportEmail,
+                "fromname": config.name,
+                "subject": "Activate your " + config.name + " account",
+                "html": jade.renderFile('template/register-activate-email.jade', {userid: req.user.id, code: activationcode, codehash: md5(activationcode), root: config.root, supportEmail: config.supportEmail})
+            });
+            sendgrid.send(email, function (err, json) {
+                if (!err) return next();
+                // Should not be reached
+                res.redirect('/register?error' + err.code);
+            });
+        } else {
+            console.log(err);
+            // Should not be reached
+            res.redirect('/register?error' + err.code);
+        }
+    });
+};
+
+exports.registerLogin = function (req, res) {
+    sqlConnection.query('SELECT * FROM `users` WHERE `idusers`=?', [req.user.id], function (err, rows, fields) {
+        req.login(generateProfile(rows[0]), function(err) {
+            res.redirect('/register/activate');
+        });
+    });
+};
+
+exports.registerActivateGet = function (req, res) {
+    res.render('register-activate', {error: req.query.error?req.query.error:null});
+};
+
+exports.registerActivatePost = function (req, res, next) {
+    sqlConnection.query('SELECT * FROM `localauth` WHERE `idusers`=?', [req.user.id], function (err, rows, fields) {
+        if (rows.length > 0) {
+            if (rows[0].activationcode === req.body.code) {
+                return next();
+            } else {
+                res.redirect('/register/activate?error=1');
+            }
+        } else {
+            // Should not be reached
+            res.redirect('/logout');
+        }
+    });
+};
+
+exports.registerActivateConfirm = function (req, res) {
+    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `activated`='2' WHERE `idusers`=?", [req.user.id], function (err, result) {
+        req.user._activated = 2;
+        res.redirect('/continue');
     });
 };
 

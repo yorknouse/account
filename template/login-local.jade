@@ -1,0 +1,16 @@
+extends layout
+
+block content
+    if error
+        p(class='panel panel-danger') Username or password incorrect
+    form(class='form-hoizontal half-width central override-display', name='login', method='post')
+        div(class='form-group')
+            label(for='username', class='sr-only') Email
+            input(type='email', name='username', class='form-control', placeholder='Email', required)
+        div(class='form-group')
+            label(for='password', class='sr-only') Password
+            input(type='password', name='password', class='form-control', placeholder='Password', required)
+        div(class='form-group')
+            button(type='submit', class='btn btn-primary') Login
+        div(class='form-group')
+            a(href='/register', class='btn btn-default') Register

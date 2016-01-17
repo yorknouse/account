@@ -1,0 +1,25 @@
+extends layout
+
+block content
+    if error
+        p(class='panel panel-danger') We were unable to register your account, please try again.
+    p You can also register with a Google account, it's faster
+    form(class='form-hoizontal half-width central override-display', name='register', method='post')
+        div(class='form-group')
+            label(for='fname', class='sr-only') First Name
+            input(type='text', name='fname', class='form-control', placeholder='First Name', required)
+        div(class='form-group')
+            label(for='lname', class='sr-only') Last Name
+            input(type='text', name='lname', class='form-control', placeholder='Last Name', required)
+        div(class='form-group')
+            label(for='username', class='sr-only') Email
+            input(type='email', name='username', class='form-control', placeholder='Email', required)
+        div(class='form-group')
+            label(for='password', class='sr-only') Password
+            input(type='password', name='password', class='form-control', placeholder='Password', required)
+        div(class='form-group')
+            label(for='confirm', class='sr-only') Confirm Password
+            input(type='password', name='confirm', class='form-control', placeholder='Confirm Password', required)
+        div(class='form-group')
+            a(href='/login', class='btn btn-default') Choose another Method
+            button(type='submit', class='btn btn-primary') Register

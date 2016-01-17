@@ -1,0 +1,15 @@
+extends layout
+
+block content
+    h2 Activate your account
+    p Please check your email and enter the code in it below.
+    if error
+        p(class='panel panel-danger') Your activation code was incorrect
+    form(class='form-horizontal half-width central override-display', name='activate', method='post')
+        div(class='form-group')
+            label(class='sr-only', for='code') Activation code
+            input(type='text', minlength='8', maxlength='8', name='code', placeholder='Activation Code', required)
+        div(class='form-group')
+            button(type='submit', class='btn btn-primary') Activate
+    p You can activate later if you wish, but you won't be able to use our services until you do.  You can click the activation link in your email when you're ready.  We reccomend using the code though.
+        

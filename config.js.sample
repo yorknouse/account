@@ -19,3 +19,6 @@ exports.sendgridAPIuser = '<your sendgrid username here>'; // Username for the a
 exports.sendgridAPIkey = '<your sendgrid API key here>'; // SendGrid API key with access to the SendMail permission
 
 exports.userActivationStatus = ['<Suspended>', '<Unverified>', '<Unapproved>', '<Activated>', '<User defined level 1>', '<User defined level 2>', '<User defined level 3>', '<User defined level 4>', '<Report handler>', '<Administrator>']; // Names for activation statuses or null if not in use
+
+exports.supportEmail = '<your support email here>'; // Public facing email which will be used to send messages to users from by default
+exports.name = '<your organisation name here>'; // Public facing name for your organisation

@@ -46,3 +46,12 @@ CREATE TABLE `nouseaccount`.`report` (
   `notes` MEDIUMTEXT NULL,
   `status` INT NULL DEFAULT 0,
   PRIMARY KEY (`idreport`));
+
+CREATE TABLE `nouseaccount`.`localauth` (
+  `email` VARCHAR(150) NOT NULL,
+  `password` VARCHAR(32) NOT NULL,
+  `salt` VARCHAR(30) NOT NULL,
+  `idusers` INT NOT NULL,
+  `activationcode` VARCHAR(8) NOT NULL,
+  PRIMARY KEY (`email`),
+  UNIQUE INDEX `idusers_UNIQUE` (`idusers` ASC));
