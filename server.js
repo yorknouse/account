@@ -7,7 +7,9 @@ var config = require('./config'),
     login = require('./login'),
     signup = require('./signup'),
     admin = require('./admin'),
-    common = require('./common');
+    common = require('./common'),
+    api = require('./api'),
+    content = require('./content');
 
 var express = require('express'),
     path = require('path'),
@@ -255,159 +257,18 @@ app.get('/admin/report/item/:reportid', isActivatedUser, isAdminUser, admin.repo
 app.post('/admin/report/item/:reportid', isActivatedUser, isAdminUser, admin.reportItemPost);
 
 // API calls for websites
-var apiAuth = function (req, res, next) {
-    var authorization = req.headers.authorization;
-    if (!authorization) return apiAuthUnauth(res);
-    
-    var parts = authorization.split(' ');
-    if (parts.length !== 2) return next(error(400));
-    var scheme = parts[0],
-        credentials = new Buffer(parts[1], 'base64').toString(),
-        index = credentials.indexOf(':');
-    if ('Basic' != scheme || index < 0) return next(error(400));
-    var user = credentials.slice(0, index),
-        pass = credentials.slice(index + 1);
-    
-    sqlConnection.query('SELECT * FROM `apiauth` WHERE `username`=?', [user], function (err, rows, fields) {
-        if (rows.length > 0) {
-            if (rows[0].password == md5(pass)) {
-                var referers = null;
-                if (rows[0].urls !== null) {
-                    referers = rows[0].urls.split(',');
-                }
-                if (referers === null || (req.headers.referer && referers.indexOf(req.headers.referer.split('/')[2]) !== -1)) {
-                    next();
-                } else {
-                    return apiAuthUnauth(res);
-                }
-            } else {
-                return apiAuthUnauth(res);
-            }
-        } else {
-            return apiAuthUnauth(res);
-        }
-    });
-}
+app.get('/api/user', api.auth, isActivatedUser, api.currentUser);
 
-var apiAuthUnauth = function (res, realm) {
-  res.statusCode = 401;
-  res.setHeader('WWW-Authenticate', 'Basic realm="Authorization required"');
-  res.end('Unauthorized');
-};
+app.get('/api/user/:uid', api.auth, api.user);
 
-app.get('/api/user', apiAuth, isActivatedUser, function (req, res) {
-    res.type('application/json');
-    res.send({'id':req.user.id, 'email':req.user.emails[0].value, 'displayName':req.user.displayName});
-});
+app.get('/api/name', api.auth, isActivatedUser, api.name);
 
-app.get('/api/user/:uid', apiAuth, function (req, res) {
-    // As this exposes a username and email for anyone with a user id, it should only be made from a server
-    sqlConnection.query('SELECT * FROM `users` WHERE `idusers`=?', [req.params.uid], function (err, rows, fields) {
-        if (rows.length > 0) {
-            res.type('application/json');
-            res.send({'id':rows[0].idusers, 'email':rows[0].email, 'displayName':rows[0].nick});
-        } else {
-            res.statusCode = 404;
-            res.end('Not found');
-        }
-    });
-});
-
-app.get('/api/name', apiAuth, isActivatedUser, function (req, res) {
-    res.type('application/json');
-    res.send({'id':req.user.id, 'name':req.user.name, 'displayName':req.user.displayName});
-});
-
-app.get('/api/session/:sessionid', apiAuth, function (req, res) {
-    console.log(req.params.sessionid);
-    sqlConnection.query('SELECT * FROM `sessions` WHERE `session_id`=?', [req.params.sessionid], function (err, rows, fields) {
-        if (rows.length > 0) {
-            res.type('application/json');
-            var cookieobj = JSON.parse(rows[0].data);
-            if (!cookieobj.passport.user) {
-                res.statusCode = 403;
-                res.end("{'error': 'No login'}");
-            } else if (cookieobj.passport.user._activated < 3) {
-                res.statusCode = 403;
-                res.end("{'error': 'Suspended'}");
-            } else {
-                res.send({'userid': cookieobj.passport.user.id, 'displayName': cookieobj.passport.user.displayName, 'email': cookieobj.passport.user.emails[0].value});
-            }
-        } else {
-            res.type('application/json');
-            res.statusCode = 404;
-            res.end("{'error': 'Not found'}");
-        }
-    });
-});
+app.get('/api/session/:sessionid', api.auth, api.session);
 
 // Content pages
-var contentAuth = function (req, res, next) {
-    var authorization = req.headers.authorization;
-    if (!authorization) return contentAuthUnauth(res);
-    
-    var parts = authorization.split(' ');
-    if (parts.length !== 2) return next(error(400));
-    var scheme = parts[0],
-        credentials = new Buffer(parts[1], 'base64').toString();
-    if ('Public' != scheme) return next(error(400));
-    var user = credentials;
-    
-    sqlConnection.query('SELECT * FROM `apiauth` WHERE `username`=?', [user], function (err, rows, fields) {
-        if (rows.length > 0) {
-            var referers = null;
-            if (rows[0].urls !== null) {
-                referers = rows[0].urls.split(',');
-            }
-            if (referers === null || (req.headers.referer && referers.indexOf(req.headers.referer.split('/')[2]) !== -1)) {
-                res.header('Access-Control-Allow-Origin', req.headers.origin);
-                res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
-                res.header('Access-Control-Allow-Headers', 'Authorization, Cookie');
-                res.header('Access-Control-Allow-Credentials', 'true');
-                next();
-            } else {
-                return contentAuthUnauth(res);
-            }
-        } else {
-            return contentAuthUnauth(res);
-        }
-    });
-};
+app.options('/content/:shortname', content.shortnameOptions);
 
-var contentAuthUnauth = function (res, realm) {
-  res.statusCode = 401;
-  res.end('Unauthorized');
-};
-
-app.options('/content/:shortname', function (req, res) {
-    res.header('Access-Control-Allow-Origin', req.headers.origin);
-    res.header('Access-Control-Allow-Methods', 'GET');
-    res.header('Access-Control-Allow-Headers', 'Authorization, Cookie');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.send();
-});
-
-app.get('/content/:shortname', contentAuth, function (req, res) {
-    sqlConnection.query('SELECT * FROM `content` WHERE `shortname`=?', [req.params.shortname], function (err, rows, fields) {
-        if (rows.length > 0) {
-            if (req.isAuthenticated() && req.user._activated > 2 && rows[0].login !== '') {
-                // Show logged-in view
-                res.send(jade.render(rows[0].login, {'req':req}));
-            } else if (rows[0].logout !== '') {
-                // Show logged-out view
-                res.send(jade.render(rows[0].logout, {'req':req}));
-            } else {
-                var dest = req.session.dest;
-                if (!dest) {
-                    dest = req.session.dest = req.originalUrl;
-                }
-                res.redirect('/login');
-            }
-        } else {
-            return error(404);
-        }
-    });
-});
+app.get('/content/:shortname', content.auth, content.shortnameGet);
 
 // Auth (Allow sites to start authentication flow)
 var authAuth = function(req, res, next) {
