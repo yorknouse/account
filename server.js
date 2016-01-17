@@ -5,7 +5,9 @@
 var config = require('./config'),
     db = require('./db'),
     login = require('./login'),
-    signup = require('./signup');
+    signup = require('./signup'),
+    admin = require('./admin'),
+    common = require('./common');
 
 var express = require('express'),
     path = require('path'),
@@ -198,259 +200,59 @@ app.post('/account/nickname', isActivatedUser, function (req, res) {
 });
 
 // Admin Pages
-app.get('/admin', isActivatedUser, isAdminUser, function (req, res) {
-    res.render('admin-index');
-});
+app.get('/admin', isActivatedUser, isAdminUser, admin.admin);
 
-app.get('/admin/users', isActivatedUser, isAdminUser, function (req, res) {
-    var low = 0, high = 1000;
-    if (req.query.low) {
-        low = parseInt(req.query.low);
-    }
-    if (req.query.high) {
-        high = parseInt(req.query.high);
-    }
-    var field = null, q = null;
-    if (req.query.field) {
-        field = req.query.field;
-    }
-    if (req.query.q) {
-        q = req.query.q;
-    }
-    sqlConnection.query('SELECT * FROM `users` ' + (field?'WHERE `' + field + '` LIKE ? ':'') + 'LIMIT ?, ?', field?[q, low, high]:[low, high], function (err, rows, fields) {
-        if (err) throw err;
-        res.render('admin-users', {rows: rows, low: low, high: high, activationStatus: config.userActivationStatus, field: field, q: q});
-    });
-});
+app.get('/admin/users', isActivatedUser, isAdminUser, admin.users);
 
-app.get('/admin/users/suspend', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `activated`=0 WHERE `idusers`=?", [req.query.idusers], function (err, result) {
-        res.redirect(req.headers.referer);
-    });
-});
+app.get('/admin/users/suspend', isActivatedUser, isAdminUser, admin.usersSuspend);
     
-app.get('/admin/users/unsuspend', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `activated`=2 WHERE `idusers`=?", [req.query.idusers], function (err, result) {
-        res.redirect(req.headers.referer);
-    });
-});
+app.get('/admin/users/unsuspend', isActivatedUser, isAdminUser, admin.usersUnsuspend);
 
-app.get('/admin/users/delete', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `fname`='', `lname`='', `email`='', `activated`=0 WHERE `idusers`=?", [req.query.idusers], function (err, result) {
-        req.session.dest = req.headers.referer;
-        res.redirect('/admin/users/delete/google?idusers=' + req.query.idusers);
-    });
-});
+app.get('/admin/users/delete', isActivatedUser, isAdminUser, admin.usersDelete);
 
-app.get('/admin/users/delete/google', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`googleauth` WHERE `idusers`=?", [req.query.idusers], function (err, result) {
-        res.redirect('/continue');
-    });
-});
+app.get('/admin/users/delete/google', isActivatedUser, isAdminUser, admin.usersDeleteGoogle);
 
-app.get('/admin/users/edit/:userid', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query('SELECT * FROM `users` WHERE `idusers`=?', [req.params.userid], function (err, rows, fields) {
-         if (rows.length > 0) {
-             res.render('admin-users-edit', {'user':rows[0], 'activationStatus':config.userActivationStatus, 'error':req.query.error?req.query.error:null});
-         }
-     });
-});
+app.get('/admin/users/edit/:userid', isActivatedUser, isAdminUser, admin.usersEditGet);
 
-app.post('/admin/users/edit/:userid', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `fname`=?, `lname`=?, `nick`=?, `email`=?, `activated`=? WHERE `idusers`=?", [req.body.fname, req.body.lname, req.body.nick, req.body.email, req.body.activated, req.params.userid], function (err, result) {
-        if (err !== null) {
-            res.redirect('/admin/users/edit/' + req.params.idcontent + '?error=' + err.code);
-        } else {
-            res.redirect('/admin/users');
-        }
-    });
-});
+app.post('/admin/users/edit/:userid', isActivatedUser, isAdminUser, admin.usersEditPost);
 
-app.get('/admin/sessions', isActivatedUser, isAdminUser, function (req, res) {
-    var low = 0, high = 1000;
-    if (req.query.low) {
-        low = parseInt(req.query.low);
-    }
-    if (req.query.high) {
-        high = parseInt(req.query.high);
-    }
-    sqlConnection.query('SELECT * FROM `sessions` LIMIT ?, ?', [low, high], function (err, rows, fields) {
-        if (err) throw err;
-        res.render('admin-sessions', {rows: rows, low: low, high: high});
-    }); 
-});
+app.get('/admin/sessions', isActivatedUser, isAdminUser, admin.sessions);
 
-app.get('/admin/sessions/delete', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`sessions` WHERE `session_id`=?", [req.query.sessionid], function (err, result) {
-        res.redirect(req.headers.referer);
-    });
-});
+app.get('/admin/sessions/delete', isActivatedUser, isAdminUser, admin.sessionsDelete);
 
-app.get('/admin/api', isActivatedUser, isAdminUser, function (req, res) {
-    var low = 0, high = 1000;
-    if (req.query.low) {
-        low = parseInt(req.query.low);
-    }
-    if (req.query.high) {
-        high = parseInt(req.query.high);
-    }
-    sqlConnection.query('SELECT * FROM `apiauth` LIMIT ?, ?', [low, high], function (err, rows, fields) {
-        if (err) throw err;
-        res.render('admin-api', {rows: rows, low: low, high: high});
-    });
-});
+app.get('/admin/api', isActivatedUser, isAdminUser, admin.api);
 
-app.post('/admin/api/password', isActivatedUser, isAdminUser, function (req, res) {
-    if (req.body.newpassword !== req.body.confirmpassword) {
-        res.status(403).send('Passwords do not match');
-    } else {
-        sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`apiauth` SET `password`=? WHERE `idapiauth`=?", [md5(req.body.newpassword), req.query.idapiauth], function (err, result) {
-            if (err !== null) {
-                res.status(500).send('Failed to update');
-            } else {
-                res.redirect(req.headers.referer);
-            }
-        });
-    }
-});
+app.post('/admin/api/password', isActivatedUser, isAdminUser, admin.apiPassword);
 
-app.post('/admin/api/urls', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`apiauth` SET `urls`=? WHERE `idapiauth`=?", [req.body.longtext, req.query.idapiauth], function (err, result) {
-        if (err !== null) {
-            res.status(500).send('Failed to update');
-        } else {
-            res.redirect(req.headers.referer);
-        }
-    });
-});
+app.post('/admin/api/urls', isActivatedUser, isAdminUser, admin.apiUrls);
 
-app.get('/admin/api/delete', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`apiauth` WHERE `idapiauth`=?", [req.query.idapiauth], function (err, result) {
-        res.redirect(req.headers.referer);
-    });
-});
+app.get('/admin/api/delete', isActivatedUser, isAdminUser, admin.apiDelete);
 
-app.get('/admin/api/create', isActivatedUser, isAdminUser, function (req, res) {
-    res.render('admin-api-create', {'error': req.query.error});
-});
+app.get('/admin/api/create', isActivatedUser, isAdminUser, admin.apiCreateGet);
 
-app.post('/admin/api/create', isActivatedUser, isAdminUser, function (req, res) {
-    if (req.body.password !== req.body.confirmpassword) {
-        res.redirect('/admin/api/create?error=PASS_MISMATCH');
-    } else {
-        sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`apiauth` (`username`, `password`, `urls`) VALUES (?, ?, ?)", [req.body.username, md5(req.body.password), req.body.urls], function (err, result) {
-            if (err !== null) {
-                res.redirect('/admin/api/create?error=' + err.code);
-            } else {
-                res.redirect('/admin/api');
-            }
-        });
-    }
-});
+app.post('/admin/api/create', isActivatedUser, isAdminUser, admin.apiCreatePost);
 
-app.get('/admin/content', isActivatedUser, isAdminUser, function (req, res) {
-    var low = 0, high = 1000;
-    if (req.query.low) {
-        low = parseInt(req.query.low);
-    }
-    if (req.query.high) {
-        high = parseInt(req.query.high);
-    }
-    sqlConnection.query('SELECT * FROM `content` LIMIT ?, ?', [low, high], function (err, rows, fields) {
-        if (err) throw err;
-        res.render('admin-content', {rows: rows, low: low, high: high});
-    });
-});
+app.get('/admin/content', isActivatedUser, isAdminUser, admin.content);
 
-app.get('/admin/content/create', isActivatedUser, isAdminUser, function (req, res) {
-    res.render('admin-content-create', {'content':{'shortname':'','description':'','login':'','logout':''}});
-});
+app.get('/admin/content/create', isActivatedUser, isAdminUser, admin.contentCreateGet);
 
-app.post('/admin/content/create', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`content` (`shortname`, `description`, `logout`, `login`) VALUES (?, ?, ?, ?)", [req.body.shortname, req.body.description, req.body.logout, req.body.login], function (err, result) {
-        if (err !== null) {
-            res.redirect('/admin/content/create?error=' + err.code);
-        } else {
-            res.redirect('/admin/content');
-        }
-    });
-});
+app.post('/admin/content/create', isActivatedUser, isAdminUser, admin.contentCreatePost);
 
-app.get('/admin/content/edit/:idcontent', isActivatedUser, isAdminUser, function (req, res) {
-     sqlConnection.query('SELECT * FROM `content` WHERE `idcontent`=?', [req.params.idcontent], function (err, rows, fields) {
-         if (rows.length > 0) {
-             res.render('admin-content-create', {'content':rows[0]});
-         }
-     });
-});
+app.get('/admin/content/edit/:idcontent', isActivatedUser, isAdminUser, admin.contentEditGet);
 
-app.post('/admin/content/edit/:idcontent', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`content` SET `shortname`=?, `description`=?, `logout`=?, `login`=? WHERE `idcontent`=?", [req.body.shortname, req.body.description, req.body.logout, req.body.login, req.params.idcontent], function (err, result) {
-        if (err !== null) {
-            res.redirect('/admin/content/edit/' + req.params.idcontent + '?error=' + err.code);
-        } else {
-            res.redirect('/admin/content');
-        }
-    });
-});
+app.post('/admin/content/edit/:idcontent', isActivatedUser, isAdminUser, admin.contentEditPost);
 
-app.get('/admin/content/delete', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`content` WHERE `idcontent`=?", [req.query.idcontent], function (err, result) {
-        res.redirect(req.headers.referer);
-    });
-});
+app.get('/admin/content/delete', isActivatedUser, isAdminUser, admin.contentDelete);
 
-var reportReasons = ['It\'s spam', 'It\'s inappropriate', 'It\'s offensive', 'It\'s about me/someone else', 'It\'s something not mentioned here'];
-var reportStatuses = ['New', 'Investigating', 'Awaiting Info', 'Awaiting decision', 'Closed (Forwarded)', 'Closed (Removed)', 'Closed (Edited)', 'Closed (Rejected)'];
+app.get('/admin/report', isActivatedUser, isAdminUser, admin.report);
 
-app.get('/admin/report', isActivatedUser, isAdminUser, function (req, res) {
-    var low = 0, high = 1000;
-    if (req.query.low) {
-        low = parseInt(req.query.low);
-    }
-    if (req.query.high) {
-        high = parseInt(req.query.high);
-    }
-    sqlConnection.query('SELECT * FROM `report` ORDER BY `status` LIMIT ?, ?', [low, high], function (err, rows, fields) {
-        if (err) throw err;
-        res.render('admin-report', {rows: rows, low: low, high: high, statuses: reportStatuses, reasons: reportReasons});
-    });
-});
+app.get('/admin/report/create', isActivatedUser, isAdminUser, admin.reportCreateGet);
 
-app.get('/admin/report/create', isActivatedUser, isAdminUser, function (req, res) {
-    res.render('admin-report-create', {reasons: reportReasons, error:req.query.error?req.query.error:null});
-});
+app.post('/admin/report/create', isActivatedUser, isAdminUser, admin.reportCreatePost);
 
-app.post('/admin/report/create', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`report` (`type`, `source`, `item`, `highlevel`, `details`, `userid`) VALUES (?, ?, ?, ?, ?, ?)", [req.body.type.replace(/(<([^>]+)>)/ig,""), req.body.source.replace(/(<([^>]+)>)/ig,""), req.body.item.replace(/(<([^>]+)>)/ig,""), parseInt(req.body.highlevel), (req.body.details==null)?null:req.body.details.replace(/(<([^>]+)>)/ig,""), (req.body.userid=='')?null:parseInt(req.body.userid)], function (err, result) {
-        console.log(err);
-        if (err === null) {
-            // Success
-            res.redirect('/admin/report/item/' + result.insertId);
-        } else {
-            // Error
-            res.redirect('/admin/report/create?error=' + err.code);
-        }
-    });
-});
+app.get('/admin/report/item/:reportid', isActivatedUser, isAdminUser, admin.reportItemGet);
 
-app.get('/admin/report/item/:reportid', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query('SELECT * FROM `report` WHERE `idreport`=?', [req.params.reportid], function (err, rows, fields) {
-         if (rows.length > 0) {
-             res.render('admin-report-item', {'report':rows[0], "statuses": reportStatuses, "reasons": reportReasons, "error":req.query.error?req.query.error:null});
-         }
-     });
-});
-
-app.post('/admin/report/item/:reportid', isActivatedUser, isAdminUser, function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`report` SET `notes`=?, `status`=? WHERE `idreport`=?", [req.body.notes, req.body.status, req.params.reportid], function (err, result) {
-        if (err !== null) {
-            res.redirect('/admin/report/item/' + req.params.reportid + '?error=' + err.code);
-        } else {
-            res.redirect('/admin/report/item/' + req.params.reportid + '?error=S_OK');
-        }
-    });
-});
+app.post('/admin/report/item/:reportid', isActivatedUser, isAdminUser, admin.reportItemPost);
 
 // API calls for websites
 var apiAuth = function (req, res, next) {
@@ -653,7 +455,7 @@ app.get('/report/new', function (req, res) {
         res.statusCode = 400;
         res.end("Report query was malformed");
     } else {
-        res.render('report-new', {"type":req.query.type, "source":req.query.source, "item":req.query.item, "userid":req.user?req.user.id:null, "email":req.user?req.user.emails[0].value:null,"reasons":reportReasons});
+        res.render('report-new', {"type":req.query.type, "source":req.query.source, "item":req.query.item, "userid":req.user?req.user.id:null, "email":req.user?req.user.emails[0].value:null,"reasons":common.reportReasons});
     }
 });
 
@@ -673,7 +475,7 @@ var submitReport = function (req, res) {
                 "to": config.reportEmail,
                 "from": req.user.emails[0].value,
                 "subject": "Content Report",
-                "text": "A new content report for " + req.session.report.type.replace(/(<([^>]+)>)/ig,"") + req.session.report.item.replace(/(<([^>]+)>)/ig,"") + " at " + req.session.report.source.replace(/(<([^>]+)>)/ig,"") + ".  The user reported this as '" + reportReasons[parseInt(req.session.report.highlevel)] + "'\r\n\r\nThis report can be viewed at " + config.root + "/admin/report/item/" + result.insertId + ".\r\n\r\nRegards\r\n\r\nNouse Account Team"
+                "text": "A new content report for " + req.session.report.type.replace(/(<([^>]+)>)/ig,"") + req.session.report.item.replace(/(<([^>]+)>)/ig,"") + " at " + req.session.report.source.replace(/(<([^>]+)>)/ig,"") + ".  The user reported this as '" + common.reportReasons[parseInt(req.session.report.highlevel)] + "'\r\n\r\nThis report can be viewed at " + config.root + "/admin/report/item/" + result.insertId + ".\r\n\r\nRegards\r\n\r\nNouse Account Team"
             });
             sendgrid.send(email, function (err, json) {
                 if (err) console.log(err);
