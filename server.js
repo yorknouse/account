@@ -3,7 +3,9 @@
 // Import Modules
 
 var config = require('./config'),
-    db = require('./db');
+    db = require('./db'),
+    login = require('./login'),
+    signup = require('./signup');
 
 var express = require('express'),
     path = require('path'),
@@ -20,7 +22,7 @@ var express = require('express'),
     jade = require('jade'),
     sendgrid = require('sendgrid')(config.sendgridAPIkey);
 
-var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+//var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
 var app = express();
 
@@ -55,26 +57,6 @@ app.use(session({
     proxy: null,
     store: sessionStore
 }));
-
-// Generate profile from DB row
-function generateProfile(row) {
-    return {
-        'provider': 'nouse',
-        'id': row.idusers,
-        'displayName': row.nick,
-        'name': {
-            'familyName': row.lname,
-            'givenName': row.fname
-        },
-        'emails': [
-            {
-                'value': row.email,
-                'type': 'account'
-            }
-        ],
-        '_activated': row.activated
-    };
-}
 
 // Login code
 app.use(passport.initialize());
@@ -132,28 +114,10 @@ function isAdminUser(req, res, next) {
     }
 }
 
-app.get('/login', function (req, res) {
-    res.render('login');
-})
+app.get('/login', login.login)
 
 // Login code for Google
-passport.use(new GoogleStrategy({
-    callbackURL: config.root + '/login/google/callback',
-    clientID: config.googleClientId,
-    clientSecret: config.googleClientSecret,
-    realm: config.root
-}, function (accessToken, refreshToken, profile, done) {
-    //Verify the callback
-    console.log('Google Login');
-    sqlConnection.query('SELECT * FROM `googleauth` WHERE `googid`=?', [profile.id], function (err, rows, fields) {
-        if (rows.length > 0) {
-            return done(null, {'provider':'nouse-transition','id': rows[0].idusers, '_googleId': profile.id});
-        }
-        // Account doesn't exist
-        // We'll create a new account later, so set the google account for now (/login/google/continue will understand)
-        return done(null, profile);
-    });
-}));
+passport.use(login.googleStrategy);
 
 app.get('/login/google', passport.authenticate('google' , {
     scope: ['profile', 'email']
@@ -164,52 +128,11 @@ app.get('/login/google/callback', passport.authenticate('google', {
     failureRedirect: '/'
 }));
 
-app.get('/login/google/continue', function(req, res){
-    console.log('Login Google Continue');
-    if (req.user.provider == 'nouse-transition') {
-        // User already exists so find and update to account
-        sqlConnection.query('SELECT * FROM `users` WHERE `idusers`=?', [req.user.id], function (err, rows, fields) {
-            req.login(generateProfile(rows[0]), function(err) {
-                console.log('Existing user logged in');
-                res.redirect('/login/continue');
-            });
-        });
-    } else {
-        // Provider is Google, account needs to be created
-        sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`users` (`fname`, `lname`, `email`, `activated`, `lastLogin`) VALUES ('" + req.user.name.givenName + "', '" + req.user.name.familyName + "', '" + req.user.emails[0].value + "', '2', NOW())", function (err, result) {
-            console.log(err);
-            if (err === null) {
-                req.login({'provider':'nouse-transition','id':result.insertId, '_googleId':req.user.id, 'emails':[{'value':req.user.emails[0].value}]}, function(err) {
-                    console.log('New User logged in');
-                    res.redirect('/login/google/link');
-                });
-            } else {
-                // Should never be reached
-                res.redirect('/logout');
-            }
-        });
-    }
-});
+app.get('/login/google/continue', login.googleContinue);
 
-app.get('/login/google/link', function(req, res) {
-    console.log('Login Google Link');
-    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`googleauth` (`googid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.user._googleId, req.user.id, req.user.emails[0].value], function (err, result) {
-        if (err !== null) {
-            // Should not be reached
-            res.redirect('/logout');
-        } else {
-            res.redirect('/login/google/continue');
-        }
-    });
-});
+app.get('/login/google/link', login.googleLink);
 
-app.get('/login/continue', function(req, res) {
-    console.log('Login Continue');
-    // Update last login and continue
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `lastLogin`=NOW() WHERE `idusers`='" + req.user.id + "'", function (err, result) {
-        res.redirect('/continue');
-    });
-});
+app.get('/login/continue', login.continue);
 
 app.get('/continue', function(req, res) {
     var dest = req.session.dest;
@@ -223,50 +146,18 @@ app.get('/continue', function(req, res) {
 
 // Account signup
 
-app.get('/signup/abandon', function (req, res) {
-    res.render('abandon');
-});
+app.get('/signup/abandon', signup.abandon);
 
-app.get('/signup/terms', isLoggedIn, function (req, res) {
-    fs.readFile(config.termsFile, 'utf8', function (err, content) {
-        if (err) return next(err);
-        res.render('terms', {
-            terms: content
-        });
-    });
-});
+app.get('/signup/terms', isLoggedIn, signup.terms);
 
-app.get('/signup/terms/accept', isLoggedIn, function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `activated`='3' WHERE `idusers`='" + req.user.id + "'", function (err, result) {
-        // Update the User object before redirecting
-        var updatedUser = req.user;
-        updatedUser._activated = 3;
-        req.login(updatedUser, function (err) {
-            if (updatedUser.displayName === null) {
-                res.redirect('/account/nickname');
-            } else {
-                res.redirect('/continue');
-            }
-        });
-    });
-});
+app.get('/signup/terms/accept', isLoggedIn, signup.termsAccept);
 
-app.get('/signup/terms/reject', isLoggedIn, function (req, res) {
-    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`users` WHERE `idusers`='" + req.user.id + "'", function (err, result) {
-        req.logout();
-        res.redirect('/signup/abandon');
-    });
-});
+app.get('/signup/terms/reject', isLoggedIn, signup.termsReject);
 
-app.get('/signup/validate', function (req, res) {
-    res.render('validate');
-});
+app.get('/signup/validate', signup.validate);
 
 // Logout code
-app.get('/logout', function (req, res) {
-    req.logout();
-    res.redirect('/');
-});
+app.get('/logout', login.logout);
 
 // Main pages
 app.get('/', function (req, res) {
