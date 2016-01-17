@@ -2,7 +2,8 @@
 
 // Import Modules
 
-var config = require('./config');
+var config = require('./config'),
+    db = require('./db');
 
 var express = require('express'),
     path = require('path'),
@@ -11,7 +12,7 @@ var express = require('express'),
     cookie = require('cookie-parser'),
     body = require('body-parser'),
     passport = require('passport'),
-    mysql = require('mysql'),
+//    mysql = require('mysql'),
     bodyparser = require('body-parser'),
     mysqlSessionStore = require('express-mysql-session'),
     fs = require('fs'),
@@ -34,22 +35,7 @@ app.use(bodyparser.urlencoded({'extended': true}));
 
 
 // Set-up database access
-var sqlConnection = mysql.createConnection({
-    host: config.mysqlHost,
-    user: config.mysqlUser,
-    password: config.mysqlPass,
-    database: config.mysqlDatabase,
-    port: config.mysqlPort
-});
-
-sqlConnection.connect(function (err) {
-    if (err) {
-        console.log(err.stack);
-        return;
-    }
-    
-    console.log("Connected to database");
-});
+var sqlConnection = db.sqlConnection();
 
 // Set-up session storage
 var sessionStore = new mysqlSessionStore({}, sqlConnection);
