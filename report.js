@@ -26,7 +26,6 @@ exports.submit = function (req, res) {
         req.session.report.details = null;
     }
     sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`report` (`type`, `source`, `item`, `highlevel`, `details`, `userid`) VALUES (?, ?, ?, ?, ?, ?)", [req.session.report.type.replace(/(<([^>]+)>)/ig,""), req.session.report.source.replace(/(<([^>]+)>)/ig,""), req.session.report.item.replace(/(<([^>]+)>)/ig,""), parseInt(req.session.report.highlevel), (req.session.report.details==null)?null:req.session.report.details.replace(/(<([^>]+)>)/ig,""), (req.session.report.userid==null)?null:parseInt(req.session.report.userid)], function (err, result) {
-        console.log(err);
         if (err === null) {
             // Success
             // Send a message to alert the team about the report
@@ -37,9 +36,10 @@ exports.submit = function (req, res) {
                 "text": "A new content report for " + req.session.report.type.replace(/(<([^>]+)>)/ig,"") + req.session.report.item.replace(/(<([^>]+)>)/ig,"") + " at " + req.session.report.source.replace(/(<([^>]+)>)/ig,"") + ".  The user reported this as '" + common.reportReasons[parseInt(req.session.report.highlevel)] + "'.\r\n\r\nThis report can be viewed at " + config.root + "/admin/report/item/" + result.insertId + ".\r\n\r\nRegards\r\n\r\nNouse Account Team"
             });
             sendgrid.send(email, function (err, json) {
-                if (err) console.log(err);
-                console.log(json);
-            })
+                if (err) {
+                    res.redirect(307, '/report/submit/email?error=1');
+                }
+            });
             // Display confirmation to the user
             res.render('report-sent');
             delete req.session.report;

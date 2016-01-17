@@ -71,7 +71,6 @@ exports.name = function (req, res) {
 };
 
 exports.session = function (req, res) {
-    console.log(req.params.sessionid);
     sqlConnection.query('SELECT * FROM `sessions` WHERE `session_id`=?', [req.params.sessionid], function (err, rows, fields) {
         if (rows.length > 0) {
             res.type('application/json');

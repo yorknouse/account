@@ -21,8 +21,6 @@ exports.auth = function(req, res, next) {
             if (rows[0].urls !== null) {
                 referers = rows[0].urls.split(',');
             }
-            console.log(referers);
-            console.log(auth);
             if (referers === null || referers.indexOf(referer) !== -1) {
                 next();
             } else {

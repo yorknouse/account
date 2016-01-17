@@ -1,7 +1,6 @@
 'use strict';
 
 // Import Modules
-
 var config = require('./config'),
     db = require('./db'),
     login = require('./login'),
@@ -20,15 +19,9 @@ var express = require('express'),
     cookie = require('cookie-parser'),
     body = require('body-parser'),
     passport = require('passport'),
-//    mysql = require('mysql'),
     bodyparser = require('body-parser'),
     mysqlSessionStore = require('express-mysql-session'),
-    fs = require('fs'),
-    md5 = require('js-md5'),
-    jade = require('jade'),
-    sendgrid = require('sendgrid')(config.sendgridAPIkey);
-
-//var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+    jade = require('jade');
 
 var app = express();
 
@@ -135,9 +128,7 @@ app.get('/login/google/callback', passport.authenticate('google', {
 }));
 
 app.get('/login/google/continue', login.googleContinue);
-
 app.get('/login/google/link', login.googleLink);
-
 app.get('/login/continue', login.continue);
 
 app.get('/continue', function(req, res) {
@@ -151,15 +142,10 @@ app.get('/continue', function(req, res) {
 })
 
 // Account signup
-
 app.get('/signup/abandon', signup.abandon);
-
 app.get('/signup/terms', isLoggedIn, signup.terms);
-
 app.get('/signup/terms/accept', isLoggedIn, signup.termsAccept);
-
 app.get('/signup/terms/reject', isLoggedIn, signup.termsReject);
-
 app.get('/signup/validate', signup.validate);
 
 // Logout code
@@ -205,71 +191,41 @@ app.post('/account/nickname', isActivatedUser, function (req, res) {
 
 // Admin Pages
 app.get('/admin', isActivatedUser, isAdminUser, admin.admin);
-
 app.get('/admin/users', isActivatedUser, isAdminUser, admin.users);
-
 app.get('/admin/users/suspend', isActivatedUser, isAdminUser, admin.usersSuspend);
-    
 app.get('/admin/users/unsuspend', isActivatedUser, isAdminUser, admin.usersUnsuspend);
-
 app.get('/admin/users/delete', isActivatedUser, isAdminUser, admin.usersDelete);
-
 app.get('/admin/users/delete/google', isActivatedUser, isAdminUser, admin.usersDeleteGoogle);
-
 app.get('/admin/users/edit/:userid', isActivatedUser, isAdminUser, admin.usersEditGet);
-
 app.post('/admin/users/edit/:userid', isActivatedUser, isAdminUser, admin.usersEditPost);
-
 app.get('/admin/sessions', isActivatedUser, isAdminUser, admin.sessions);
-
 app.get('/admin/sessions/delete', isActivatedUser, isAdminUser, admin.sessionsDelete);
-
 app.get('/admin/api', isActivatedUser, isAdminUser, admin.api);
-
 app.post('/admin/api/password', isActivatedUser, isAdminUser, admin.apiPassword);
-
 app.post('/admin/api/urls', isActivatedUser, isAdminUser, admin.apiUrls);
-
 app.get('/admin/api/delete', isActivatedUser, isAdminUser, admin.apiDelete);
-
 app.get('/admin/api/create', isActivatedUser, isAdminUser, admin.apiCreateGet);
-
 app.post('/admin/api/create', isActivatedUser, isAdminUser, admin.apiCreatePost);
-
 app.get('/admin/content', isActivatedUser, isAdminUser, admin.content);
-
 app.get('/admin/content/create', isActivatedUser, isAdminUser, admin.contentCreateGet);
-
 app.post('/admin/content/create', isActivatedUser, isAdminUser, admin.contentCreatePost);
-
 app.get('/admin/content/edit/:idcontent', isActivatedUser, isAdminUser, admin.contentEditGet);
-
 app.post('/admin/content/edit/:idcontent', isActivatedUser, isAdminUser, admin.contentEditPost);
-
 app.get('/admin/content/delete', isActivatedUser, isAdminUser, admin.contentDelete);
-
 app.get('/admin/report', isActivatedUser, isAdminUser, admin.report);
-
 app.get('/admin/report/create', isActivatedUser, isAdminUser, admin.reportCreateGet);
-
 app.post('/admin/report/create', isActivatedUser, isAdminUser, admin.reportCreatePost);
-
 app.get('/admin/report/item/:reportid', isActivatedUser, isAdminUser, admin.reportItemGet);
-
 app.post('/admin/report/item/:reportid', isActivatedUser, isAdminUser, admin.reportItemPost);
 
 // API calls for websites
 app.get('/api/user', api.auth, isActivatedUser, api.currentUser);
-
 app.get('/api/user/:uid', api.auth, api.user);
-
 app.get('/api/name', api.auth, isActivatedUser, api.name);
-
 app.get('/api/session/:sessionid', api.auth, api.session);
 
 // Content pages
 app.options('/content/:shortname', content.shortnameOptions);
-
 app.get('/content/:shortname', content.auth, content.shortnameGet);
 
 // Auth (Allow sites to start authentication flow)
@@ -277,13 +233,11 @@ app.get('/auth/:scheme/:sitename/:port/msg', auth.auth, isActivatedUser, auth.ms
 
 // Reporting system
 app.get('/report/new', report.new);
-
 app.post('/report/submit', report.submitPost, isActivatedUser, report.submit);
-
 app.get('/report/submit', isActivatedUser, report.submit);
-
 app.post('/report/submit/email', report.email);
 
 // Run server
 var server = http.createServer(app);
+console.log('Server ready - starting to listen');
 server.listen(app.get('port'));

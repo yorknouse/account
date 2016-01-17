@@ -14,11 +14,8 @@ exports.sqlConnection = function () {
     });
     conn.connect(function (err) {
         if (err) {
-            console.log(err.stack);
             return;
         }
-
-        console.log("Connected to database");
     });
     return conn;
 };
