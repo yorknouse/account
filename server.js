@@ -9,7 +9,8 @@ var config = require('./config'),
     admin = require('./admin'),
     common = require('./common'),
     api = require('./api'),
-    content = require('./content');
+    content = require('./content'),
+    auth = require('./auth');
 
 var express = require('express'),
     path = require('path'),
@@ -271,44 +272,7 @@ app.options('/content/:shortname', content.shortnameOptions);
 app.get('/content/:shortname', content.auth, content.shortnameGet);
 
 // Auth (Allow sites to start authentication flow)
-var authAuth = function(req, res, next) {
-    var auth = req.session.auth;
-    if (req.query && req.query.apiuser) {
-        auth = req.session.auth = new Buffer(req.query.apiuser, 'base64').toString()
-    }
-    var referer = req.session.referer;
-    if (referer == null && req.headers.referer) {
-        referer = req.session.referer = req.headers.referer.split('/')[2];
-    }
-    sqlConnection.query('SELECT * FROM `apiauth` WHERE `username`=?', [auth], function (err, rows, fields) {
-        if (rows.length > 0) {
-            var referers = null;
-            if (rows[0].urls !== null) {
-                referers = rows[0].urls.split(',');
-            }
-            console.log(referers);
-            console.log(auth);
-            if (referers === null || referers.indexOf(referer) !== -1) {
-                next();
-            } else {
-                delete req.session.auth;
-                delete req.session.referer;
-                res.statusCode = 401;
-                res.end('Unauthorized');
-            }
-        } else {
-            delete req.session.auth;
-            delete req.session.referer;
-            res.statusCode = 404;
-        }
-    });
-};
-
-app.get('/auth/:scheme/:sitename/:port/msg', authAuth, isActivatedUser, function (req, res) {
-    res.render('auth-msg', {'sitename':req.params.sitename,'scheme':req.params.scheme,'port':req.params.port});
-    delete req.session.auth;
-    delete req.session.referer;
-});
+app.get('/auth/:scheme/:sitename/:port/msg', auth.auth, isActivatedUser, auth.msg);
 
 // Reporting system
 app.get('/report/new', function (req, res) {
