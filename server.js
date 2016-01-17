@@ -208,6 +208,7 @@ app.get('/admin/users/suspend', isActivatedUser, isAdminUser, admin.usersSuspend
 app.get('/admin/users/unsuspend', isActivatedUser, isAdminUser, admin.usersUnsuspend);
 app.get('/admin/users/delete', isActivatedUser, isAdminUser, admin.usersDelete);
 app.get('/admin/users/delete/google', isActivatedUser, isAdminUser, admin.usersDeleteGoogle);
+app.get('/admin/users/delete/google', isActivatedUser, isAdminUser, admin.usersDeleteLocal);
 app.get('/admin/users/edit/:userid', isActivatedUser, isAdminUser, admin.usersEditGet);
 app.post('/admin/users/edit/:userid', isActivatedUser, isAdminUser, admin.usersEditPost);
 app.get('/admin/sessions', isActivatedUser, isAdminUser, admin.sessions);

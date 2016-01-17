@@ -56,6 +56,12 @@ exports.usersDelete = function (req, res) {
 
 exports.usersDeleteGoogle = function (req, res) {
     sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`googleauth` WHERE `idusers`=?", [req.query.idusers], function (err, result) {
+        res.redirect('/admin/users/delete/local?idusers=' + req.query.idusers);
+    });
+};
+
+exports.usersDeleteLocal = function (req, res) {
+    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`localauth` WHERE `idusers`=?", [req.query.idusers], function (err, result) {
         res.redirect('/continue');
     });
 };
