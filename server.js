@@ -5,6 +5,7 @@ var config = require('./config'),
     db = require('./db'),
     login = require('./login'),
     signup = require('./signup'),
+    connect = require('./connect'),
     admin = require('./admin'),
     common = require('./common'),
     api = require('./api'),
@@ -183,6 +184,37 @@ app.get('/signup/activate', signup.activate, signup.activateConfirm);
 
 // Logout code
 app.get('/logout', login.logout);
+
+// Connect accounts code
+app.get('/connect', connect.connect);
+app.get('/connect/continue', connect.continue);
+
+passport.use('google-connect', connect.googleStrategy);
+
+app.get('/connect/google', passport.authorize('google-connect' , {
+    scope: ['profile', 'email']
+}));
+
+app.get('/connect/google/callback', passport.authorize('google-connect', {
+    failureRedirect: '/connect?error=1'
+}), connect.googleCallback);
+
+passport.use('facebook-connect', connect.facebookStrategy);
+
+app.get('/connect/facebook', passport.authorize('facebook-connect' , {
+    scope: ['public_profile', 'email']
+}));
+
+app.get('/connect/facebook/callback', passport.authorize('facebook-connect', {
+    failureRedirect: '/connect?error=1'
+}), connect.facebookCallback);
+
+app.get('/connect/facebook/retry', passport.authorize('facebook-connect', {
+    scope: ['public_profile', 'email'],
+    authType: 'rerequest'
+}), connect.facebookCallback);
+
+app.get('/connect/facebook/error', connect.facebookError);
 
 // Main pages
 app.get('/', function (req, res) {

@@ -6,5 +6,9 @@ block content
     p You can either provide your email address through Facebook, or you can choose to login using another method.
 
 block actionbuttons
-    a(class='btn btn-default', id='cancel', href='/login') Use another method
-    a(class='btn btn-primary', id='facebook', href='/login/facebook/retry') Continue with Facebook
+    if connect == true
+        a(class='btn btn-default', id='cancel', href='/connect') Use another method
+        a(class='btn btn-primary', id='facebook', href='/connect/facebook/retry') Continue with Facebook
+    else
+        a(class='btn btn-default', id='cancel', href='/login') Use another method
+        a(class='btn btn-primary', id='facebook', href='/login/facebook/retry') Continue with Facebook

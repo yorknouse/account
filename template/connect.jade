@@ -1,0 +1,14 @@
+extends layout
+
+block content
+    if error == 1
+        p(class='alert alert-error')
+            | Your account could not be added.  Please try again
+    p
+        | Choose the type of account you want to log in with
+    div(class='btn-group-vertical half-width central override-display')
+        a(role='button', class='btn btn-primary', href='/connect/google') Google
+        a(role='button', class='btn btn-primary', href='/connect/facebook') Facebook
+        
+block actionbuttons
+    a(class='btn btn-default', id='cancel', href='/account') Cancel
