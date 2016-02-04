@@ -5,6 +5,7 @@ var config = require('./config'),
 
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy,
     LocalStrategy = require('passport-local'),
+    FacebookStrategy = require('passport-facebook'),
     md5 = require('js-md5'),
     randomstring = require('randomstring'),
     sendgrid = require('sendgrid')(config.sendgridAPIkey),
@@ -83,6 +84,69 @@ exports.googleLink = function(req, res) {
         }
     });
 };
+
+// Login code for Facebook
+exports.facebookStrategy = new FacebookStrategy({
+    clientID: config.facebookClientId,
+    clientSecret: config.facebookClientSecret,
+    callbackURL: config.root + '/login/facebook/callback',
+    profileFields: ['id', 'displayName', 'email', 'first_name', 'last_name']
+}, function (accessToken, refreshToken, profile, done) {
+    // Verify the callback
+    sqlConnection.query('SELECT * FROM `fbauth` WHERE `fbid`=?', [profile.id], function (err, rows, fields) {
+        if (rows.length > 0) {
+            return done(null, {'provider':'nouse-transition','id': rows[0].idusers, '_fbId': profile.id});
+        }
+        // Account doesn't exist
+        // We'll create a new account later, so set the facebook account for now (/login/facebook/continue will understand)
+        return done(null, profile);
+    });
+});
+
+exports.facebookContinue = function(req, res){
+    if (req.user.provider == 'nouse-transition') {
+        // User already exists so find and update to account
+        sqlConnection.query('SELECT * FROM `users` WHERE `idusers`=?', [req.user.id], function (err, rows, fields) {
+            req.login(generateProfile(rows[0]), function(err) {
+                res.redirect('/login/continue');
+            });
+        });
+    } else {
+        // Provider is Facebook, account needs to be created
+        if (!req.user.emails || req.user.emails.length == 0 || req.user.emails[0].value.indexOf('@') == -1) {
+            // Email permission declined, explain and re-request
+            req.logout();
+            res.redirect('/login/facebook/error');
+        } else {
+            sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`users` (`fname`, `lname`, `email`, `activated`, `lastLogin`) VALUES ('" + req.user.name.givenName + "', '" + req.user.name.familyName + "', '" + req.user.emails[0].value + "', '2', NOW())", function (err, result) {
+                if (err === null) {
+                    req.login({'provider':'nouse-transition','id':result.insertId, '_fbId':req.user.id, 'emails':[{'value':req.user.emails[0].value}]}, function(err) {
+                        res.redirect('/login/facebook/link');
+                    });
+                } else {
+                    // Should never be reached
+                    res.redirect('/logout');
+                }
+            });
+        }
+    }
+};
+
+exports.facebookLink = function(req, res) {
+    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`fbauth` (`fbid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.user._fbId, req.user.id, req.user.emails[0].value], function (err, result) {
+        if (err !== null) {
+            // Should not be reached
+            res.redirect('/logout');
+        } else {
+            res.redirect('/login/facebook/continue');
+        }
+    });
+};
+
+exports.facebookError = function (req, res) {
+    res.render('login-facebook-error');
+}
+
 
 // Local login code
 exports.localStrategy = new LocalStrategy(function (username, password, done) {

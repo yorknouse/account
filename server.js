@@ -130,6 +130,27 @@ app.get('/login/google/callback', passport.authenticate('google', {
 app.get('/login/google/continue', login.googleContinue);
 app.get('/login/google/link', login.googleLink);
 
+// Login code for Facebook
+passport.use(login.facebookStrategy);
+
+app.get('/login/facebook', passport.authenticate('facebook', {
+    scope: ['public_profile', 'email']
+}));
+
+app.get('/login/facebook/retry', passport.authenticate('facebook', {
+    scope: ['public_profile', 'email'],
+    authType: 'rerequest'
+}));
+
+app.get('/login/facebook/callback', passport.authenticate('facebook', {
+    successRedirect: '/login/facebook/continue',
+    failureRedirect: '/'
+}));
+
+app.get('/login/facebook/continue', login.facebookContinue);
+app.get('/login/facebook/link', login.facebookLink);
+app.get('/login/facebook/error', login.facebookError);
+
 // Login code for Local
 passport.use(login.localStrategy);
 
@@ -208,7 +229,8 @@ app.get('/admin/users/suspend', isActivatedUser, isAdminUser, admin.usersSuspend
 app.get('/admin/users/unsuspend', isActivatedUser, isAdminUser, admin.usersUnsuspend);
 app.get('/admin/users/delete', isActivatedUser, isAdminUser, admin.usersDelete);
 app.get('/admin/users/delete/google', isActivatedUser, isAdminUser, admin.usersDeleteGoogle);
-app.get('/admin/users/delete/google', isActivatedUser, isAdminUser, admin.usersDeleteLocal);
+app.get('/admin/users/delete/facebook', isActivatedUser, isAdminUser, admin.usersDeleteFacebook);
+app.get('/admin/users/delete/local', isActivatedUser, isAdminUser, admin.usersDeleteLocal);
 app.get('/admin/users/edit/:userid', isActivatedUser, isAdminUser, admin.usersEditGet);
 app.post('/admin/users/edit/:userid', isActivatedUser, isAdminUser, admin.usersEditPost);
 app.get('/admin/sessions', isActivatedUser, isAdminUser, admin.sessions);

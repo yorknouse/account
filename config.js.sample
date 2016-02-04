@@ -22,3 +22,6 @@ exports.userActivationStatus = ['<Suspended>', '<Unverified>', '<Unapproved>', '
 
 exports.supportEmail = '<your support email here>'; // Public facing email which will be used to send messages to users from by default
 exports.name = '<your organisation name here>'; // Public facing name for your organisation
+
+exports.facebookClientId = '<your facebook client id>'; // Both Facebook keys are needed for the authentication system
+exports.facebookClientSecret = '<your facebook client secret>'; // They are found in Facebook for developers App Settings

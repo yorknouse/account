@@ -1,0 +1,10 @@
+extends layout
+
+block content
+    h2 Facebook login error
+    p Facebook didn't provide an email address when you logged in.  We need an email address to allow you to comment on our website as part of our terms and conditions.
+    p You can either provide your email address through Facebook, or you can choose to login using another method.
+
+block actionbuttons
+    a(class='btn btn-default', id='cancel', href='/login') Use another method
+    a(class='btn btn-primary', id='facebook', href='/login/facebook/retry') Continue with Facebook

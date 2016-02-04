@@ -7,15 +7,14 @@ CREATE TABLE `nouseaccount`.`users` (
   `activated` INT NOT NULL DEFAULT 1,
   `lastLogin` DATETIME NULL,
   PRIMARY KEY (`idusers`),
-  UNIQUE INDEX `idusers_UNIQUE` (`idusers` ASC),
-  UNIQUE INDEX `email_UNIQUE` (`email` ASC));
+  UNIQUE INDEX `idusers_UNIQUE` (`idusers` ASC));
   
 CREATE TABLE `nouseaccount`.`googleAuth` (
     `googid` VARCHAR(45) NOT NULL,
     `idusers` INT NOT NULL,
     `email` VARCHAR(150) NOT NULL,
     PRIMARY KEY (`googid`),
-    UNIQUE INDEX `googid_UNIQUE` (`googid` ASC)),
+    UNIQUE INDEX `googid_UNIQUE` (`googid` ASC),
     UNIQUE INDEX `email_UNIQUE` (`email` ASC));
   
 CREATE TABLE `nouseaccount`.`apiauth` (
@@ -55,3 +54,11 @@ CREATE TABLE `nouseaccount`.`localauth` (
   `activationcode` VARCHAR(8) NOT NULL,
   PRIMARY KEY (`email`),
   UNIQUE INDEX `idusers_UNIQUE` (`idusers` ASC));
+  
+CREATE TABLE `nouseaccount`.`fbAuth` (
+    `fbid` VARCHAR(45) NOT NULL,
+    `idusers` INT NOT NULL,
+    `email` VARCHAR(150) NOT NULL,
+    PRIMARY KEY (`fbid`),
+    UNIQUE INDEX `fbid_UNIQUE` (`fbid` ASC),
+    UNIQUE INDEX `email_UNIQUE` (`email` ASC));
