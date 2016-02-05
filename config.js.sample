@@ -1,9 +1,5 @@
 exports.root = '<your root url here>'; // Root of the site (without trailing /)
-
 exports.secret = '<your secret here>'; // Secret used for securing sessions
-
-exports.googleClientId = '<your google client id here>'; // Both Google keys are used for the authentication session
-exports.googleClientSecret = '<your google client secret here>'; // They are found in Google Cloud Dashboard
 
 exports.mysqlHost = 'localhost'; // Host name for the MySQL server
 exports.mysqlPort = 3306; // Port for the MySQL server
@@ -14,14 +10,16 @@ exports.mysqlDatabase = '<your database name here>'; // MySQL database name
 exports.termsFile = '<relative path to terms file>'; // Path to file displayed when users are agreeing to terms
 
 exports.reportEmail = '<email address for abuse reports>'; // Email address used for emailing reports to and shown in reports to user who aren't logged in
+exports.supportEmail = '<your support email here>'; // Public facing email which will be used to send messages to users from by default
+exports.name = '<your organisation name here>'; // Public facing name for your organisation
+
+exports.googleClientId = '<your google client id here>'; // Both Google keys are used for the authentication session
+exports.googleClientSecret = '<your google client secret here>'; // They are found in Google Cloud Dashboard
+
+exports.facebookClientId = '<your facebook client id>'; // Both Facebook keys are needed for the authentication system
+exports.facebookClientSecret = '<your facebook client secret>'; // They are found in Facebook for developers App Settings
 
 exports.sendgridAPIuser = '<your sendgrid username here>'; // Username for the account associated with the API key below
 exports.sendgridAPIkey = '<your sendgrid API key here>'; // SendGrid API key with access to the SendMail permission
 
 exports.userActivationStatus = ['<Suspended>', '<Unverified>', '<Unapproved>', '<Activated>', '<User defined level 1>', '<User defined level 2>', '<User defined level 3>', '<User defined level 4>', '<Report handler>', '<Administrator>']; // Names for activation statuses or null if not in use
-
-exports.supportEmail = '<your support email here>'; // Public facing email which will be used to send messages to users from by default
-exports.name = '<your organisation name here>'; // Public facing name for your organisation
-
-exports.facebookClientId = '<your facebook client id>'; // Both Facebook keys are needed for the authentication system
-exports.facebookClientSecret = '<your facebook client secret>'; // They are found in Facebook for developers App Settings
