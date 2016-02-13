@@ -1,4 +1,6 @@
-CREATE TABLE `nouseaccount`.`users` (
+SET sql_notes = 0; # Disbale warnings to prevent errors (see http://stackoverflow.com/questions/1650946/mysql-create-table-if-not-exists-error-1050)
+
+CREATE TABLE IF NOT EXISTS `users` (
   `idusers` INT NOT NULL AUTO_INCREMENT,
   `fname` VARCHAR(45) NULL,
   `lname` VARCHAR(45) NULL,
@@ -9,7 +11,7 @@ CREATE TABLE `nouseaccount`.`users` (
   PRIMARY KEY (`idusers`),
   UNIQUE INDEX `idusers_UNIQUE` (`idusers` ASC));
   
-CREATE TABLE `nouseaccount`.`googleAuth` (
+CREATE TABLE IF NOT EXISTS `googleAuth` (
     `googid` VARCHAR(45) NOT NULL,
     `idusers` INT NOT NULL,
     `email` VARCHAR(150) NOT NULL,
@@ -17,7 +19,7 @@ CREATE TABLE `nouseaccount`.`googleAuth` (
     UNIQUE INDEX `googid_UNIQUE` (`googid` ASC),
     UNIQUE INDEX `email_UNIQUE` (`email` ASC));
   
-CREATE TABLE `nouseaccount`.`apiauth` (
+CREATE TABLE IF NOT EXISTS `apiauth` (
   `idapiauth` INT NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(30) NOT NULL,
   `password` VARCHAR(32) NOT NULL,
@@ -25,7 +27,7 @@ CREATE TABLE `nouseaccount`.`apiauth` (
   PRIMARY KEY (`idapiauth`),
   UNIQUE INDEX `username_UNIQUE` (`username` ASC));
 
-CREATE TABLE `nouseaccount`.`content` (
+CREATE TABLE IF NOT EXISTS `content` (
   `idcontent` INT NOT NULL AUTO_INCREMENT,
   `shortname` VARCHAR(32) NOT NULL,
   `description` VARCHAR(80) NULL,
@@ -34,7 +36,7 @@ CREATE TABLE `nouseaccount`.`content` (
   PRIMARY KEY (`idcontent`),
   UNIQUE INDEX `shortname_UNIQUE` (`shortname` ASC));
   
-CREATE TABLE `nouseaccount`.`report` (
+CREATE TABLE IF NOT EXISTS `report` (
   `idreport` INT NOT NULL AUTO_INCREMENT,
   `type` VARCHAR(30) NOT NULL,
   `source` VARCHAR(200) NOT NULL,
@@ -46,7 +48,7 @@ CREATE TABLE `nouseaccount`.`report` (
   `status` INT NULL DEFAULT 0,
   PRIMARY KEY (`idreport`));
 
-CREATE TABLE `nouseaccount`.`localauth` (
+CREATE TABLE IF NOT EXISTS `localauth` (
   `email` VARCHAR(150) NOT NULL,
   `password` VARCHAR(32) NOT NULL,
   `salt` VARCHAR(30) NOT NULL,
@@ -55,10 +57,12 @@ CREATE TABLE `nouseaccount`.`localauth` (
   PRIMARY KEY (`email`),
   UNIQUE INDEX `idusers_UNIQUE` (`idusers` ASC));
   
-CREATE TABLE `nouseaccount`.`fbAuth` (
+CREATE TABLE IF NOT EXISTS `fbAuth` (
     `fbid` VARCHAR(45) NOT NULL,
     `idusers` INT NOT NULL,
     `email` VARCHAR(150) NOT NULL,
     PRIMARY KEY (`fbid`),
     UNIQUE INDEX `fbid_UNIQUE` (`fbid` ASC),
     UNIQUE INDEX `email_UNIQUE` (`email` ASC));
+    
+SET sql_notes = 1;

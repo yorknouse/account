@@ -11,7 +11,8 @@ var config = require('./config'),
     api = require('./api'),
     content = require('./content'),
     auth = require('./auth'),
-    report = require('./report');
+    report = require('./report'),
+    setup = require('./setup');
 
 var express = require('express'),
     path = require('path'),
@@ -23,6 +24,11 @@ var express = require('express'),
     bodyparser = require('body-parser'),
     mysqlSessionStore = require('express-mysql-session'),
     jade = require('jade');
+
+if (!setup.setup()) {
+    console.log("Setup failed");
+    process.exit(1);
+}
 
 var app = express();
 

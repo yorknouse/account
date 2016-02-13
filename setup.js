@@ -142,11 +142,48 @@ function verifyConfig() {
 
 function createDatabase() {
     // Create the database based on a series of tests
+    fs.access('dbsetup.sql', fs.R_OK, function (err) {
+        if (err) {
+            console.log('Unable to read database setup script');
+            return false;
+        }
+        fs.readFile('dbsetup.sql', 'utf8', function (err, content) {
+            if (err) {
+                console.log('Error reading database setup script');
+                return false;
+            }
+            
+            content = content.replace('nouseaccount', config.mysqlDatabase); // Set correct database name in script
+            
+            var mysql = require('mysql');
+            var conn = mysql.createConnection({
+                host: config.mysqlHost,
+                user: config.mysqlUser,
+                password: config.mysqlPass,
+                database: config.mysqlDatabase,
+                port: config.mysqlPort,
+                multipleStatements: true
+            });
+            conn.connect(function (err) {
+                if (err) {
+                    console.log('Unable to connect to database');
+                    console.log(err);
+                    return false;
+                }
+            });
+            conn.query(content, function (err, results) {
+                // Results of database creation
+                if (err) console.log(err);
+            });
+            conn.end();
+        });
+    })
     return true;
 }
 
 function updateDatabase() {
     // Make any changes to the database from the default configuration
+    // Currently there are no updates so there is no need to use it
     return true;
 }
 
