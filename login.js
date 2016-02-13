@@ -6,6 +6,7 @@ var config = require('./config'),
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy,
     LocalStrategy = require('passport-local'),
     FacebookStrategy = require('passport-facebook'),
+    WordpressStrategy = require('passport-wordpress').Strategy,
     md5 = require('js-md5'),
     randomstring = require('randomstring'),
     sendgrid = require('sendgrid')(config.sendgridAPIkey),
@@ -147,6 +148,65 @@ exports.facebookError = function (req, res) {
     res.render('login-facebook-error');
 }
 
+// Login code for Wordpress
+exports.wordpressStrategy = new WordpressStrategy({
+    clientID: config.wordpressClientId,
+    clientSecret: config.wordpressClientSecret,
+    callbackURL: config.root + '/login/wordpress/callback',
+    scope: ['auth']
+}, function (accessToken, refreshToken, profile, done) {
+    profile.id = profile._json.ID; // Fix a known issue (https://github.com/mjpearson/passport-wordpress/commit/8690ef2ff751299d5ea5b8caa1cca273884753c9) that hasn't made it to NPM yet
+    // Now fix some undocumented issues with interpreting the information
+    if (!profile.emails) profile.emails = []; // Email in correct format
+    profile.emails.push({value: profile._json.email});
+    if (!profile.name) profile.name = {
+        givenName: profile.displayName.split(' ')[0],
+        familyName: profile.displayName.split(' ')[profile.displayName.split(' ').length - 1]
+    };
+    
+    sqlConnection.query('SELECT * FROM `wpauth` WHERE `wpid`=?', [profile.id], function (err, rows, fields) {
+        if (rows.length > 0) {
+            return done(null, {'provider':'nouse-transition','id': rows[0].idusers, '_wpId': profile.id});
+        }
+        // Account doesn't exist
+        // We'll create a new account later, so set the wordpress account for now (/login/wordpress/continue will understand)
+        return done(null, profile);
+    });
+});
+
+exports.wordpressContinue = function(req, res){
+    if (req.user.provider == 'nouse-transition') {
+        // User already exists so find and update to account
+        sqlConnection.query('SELECT * FROM `users` WHERE `idusers`=?', [req.user.id], function (err, rows, fields) {
+            req.login(generateProfile(rows[0]), function(err) {
+                res.redirect('/login/continue');
+            });
+        });
+    } else {
+        // Provider is Wordpress, account needs to be created
+        sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`users` (`fname`, `lname`, `email`, `activated`, `lastLogin`) VALUES ('" + req.user.name.givenName + "', '" + req.user.name.familyName + "', '" + req.user.emails[0].value + "', '2', NOW())", function (err, result) {
+            if (err === null) {
+                req.login({'provider':'nouse-transition','id':result.insertId, '_wpId':req.user.id, 'emails':[{'value':req.user.emails[0].value}]}, function(err) {
+                    res.redirect('/login/wordpress/link');
+                });
+            } else {
+                // Should never be reached
+                res.redirect('/logout');
+            }
+        });
+    }
+};
+
+exports.wordpressLink = function(req, res) {
+    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`wpauth` (`wpid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.user._wpId, req.user.id, req.user.emails[0].value], function (err, result) {
+        if (err !== null) {
+            // Should not be reached
+            res.redirect('/logout');
+        } else {
+            res.redirect('/login/wordpress/continue');
+        }
+    });
+};
 
 // Local login code
 exports.localStrategy = new LocalStrategy(function (username, password, done) {

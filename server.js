@@ -158,6 +158,19 @@ app.get('/login/facebook/continue', login.facebookContinue);
 app.get('/login/facebook/link', login.facebookLink);
 app.get('/login/facebook/error', login.facebookError);
 
+// Login code for Wordpress
+passport.use(login.wordpressStrategy);
+
+app.get('/login/wordpress', passport.authenticate('wordpress'));
+
+app.get('/login/wordpress/callback', passport.authenticate('wordpress', {
+    successRedirect: '/login/wordpress/continue',
+    failureRedirect: '/'
+}));
+
+app.get('/login/wordpress/continue', login.wordpressContinue);
+app.get('/login/wordpress/link', login.wordpressLink);
+
 // Login code for Local
 passport.use(login.localStrategy);
 
@@ -268,6 +281,7 @@ app.get('/admin/users/unsuspend', isActivatedUser, isAdminUser, admin.usersUnsus
 app.get('/admin/users/delete', isActivatedUser, isAdminUser, admin.usersDelete);
 app.get('/admin/users/delete/google', isActivatedUser, isAdminUser, admin.usersDeleteGoogle);
 app.get('/admin/users/delete/facebook', isActivatedUser, isAdminUser, admin.usersDeleteFacebook);
+app.get('/admin/users/delete/wordpress', isActivatedUser, isAdminUser, admin.usersDeleteWordpress);
 app.get('/admin/users/delete/local', isActivatedUser, isAdminUser, admin.usersDeleteLocal);
 app.get('/admin/users/edit/:userid', isActivatedUser, isAdminUser, admin.usersEditGet);
 app.post('/admin/users/edit/:userid', isActivatedUser, isAdminUser, admin.usersEditPost);

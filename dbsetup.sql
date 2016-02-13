@@ -64,5 +64,13 @@ CREATE TABLE IF NOT EXISTS `fbAuth` (
     PRIMARY KEY (`fbid`),
     UNIQUE INDEX `fbid_UNIQUE` (`fbid` ASC),
     UNIQUE INDEX `email_UNIQUE` (`email` ASC));
+
+CREATE TABLE IF NOT EXISTS `wpAuth` (
+    `wpid` VARCHAR(10) NOT NULL,
+    `idusers` INT NOT NULL,
+    `email` VARCHAR(150) NOT NULL,
+    PRIMARY KEY (`wpid`),
+    UNIQUE INDEX `wpid_UNIQUE` (`wpid` ASC),
+    UNIQUE INDEX `email_UNIQUE` (`email` ASC));
     
 SET sql_notes = 1;

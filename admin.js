@@ -62,6 +62,12 @@ exports.usersDeleteGoogle = function (req, res) {
 
 exports.usersDeleteFacebook = function (req, res) {
     sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`fbauth` WHERE `idusers`=?", [req.query.idusers], function (err, result) {
+        res.redirect('/admin/users/delete/wordpress?idusers=' + req.query.idusers);
+    });
+};
+
+exports.usersDeleteWordpress = function (req, res) {
+    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`wpauth` WHERE `idusers`=?", [req.query.idusers], function (err, result) {
         res.redirect('/admin/users/delete/local?idusers=' + req.query.idusers);
     });
 };

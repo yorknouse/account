@@ -19,6 +19,9 @@ exports.googleClientSecret = '<your google client secret here>'; // They are fou
 exports.facebookClientId = '<your facebook client id>'; // Both Facebook keys are needed for the authentication system
 exports.facebookClientSecret = '<your facebook client secret>'; // They are found in Facebook for developers App Settings
 
+exports.wordpressClientId = '<your facebook client id>'; // Both Wordpress keys are needed for the authentication system
+exports.wordpressClientSecret = '<your facebook client secret>'; // They are found in Wordpress.com Developer Apps
+
 exports.sendgridAPIuser = '<your sendgrid username here>'; // Username for the account associated with the API key below
 exports.sendgridAPIkey = '<your sendgrid API key here>'; // SendGrid API key with access to the SendMail permission
 
