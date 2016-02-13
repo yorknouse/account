@@ -59,7 +59,7 @@ function verifyConfig() {
         console.log('User activation statuses missing, should be 10');
         return false;
     } else {
-        for (status in config.userActivationStatus) {
+        for (var status in config.userActivationStatus) {
             if (status == '') {
                 console.log('Status name not given correctly');
                 return false;
