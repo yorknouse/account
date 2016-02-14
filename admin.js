@@ -29,7 +29,7 @@ exports.users = function (req, res) {
     if (req.query.q) {
         q = req.query.q;
     }
-    sqlConnection.query('SELECT * FROM `users` ' + (field?'WHERE `' + field + '` LIKE ? ':'') + 'LIMIT ?, ?', field?[q, low, high]:[low, high], function (err, rows, fields) {
+    sqlConnection.query('SELECT * FROM `users` ' + (field?'WHERE ?? LIKE ? ':'') + 'LIMIT ?, ?', field?[field, q, low, high]:[low, high], function (err, rows, fields) {
         if (err) throw err;
         res.render('admin-users', {rows: rows, low: low, high: high, activationStatus: config.userActivationStatus, field: field, q: q});
     });

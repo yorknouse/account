@@ -22,7 +22,7 @@ exports.terms = function (req, res) {
 };
 
 exports.termsAccept = function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `activated`='3' WHERE `idusers`='" + req.user.id + "'", function (err, result) {
+    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `activated`='3' WHERE `idusers`=?", [req.user.id], function (err, result) {
         // Update the User object before redirecting
         var updatedUser = req.user;
         updatedUser._activated = 3;
@@ -37,7 +37,7 @@ exports.termsAccept = function (req, res) {
 };
 
 exports.termsReject = function (req, res) {
-    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`users` WHERE `idusers`='" + req.user.id + "'", function (err, result) {
+    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`users` WHERE `idusers`=?", [req.user.id], function (err, result) {
         req.logout();
         res.redirect('/signup/abandon');
     });

@@ -263,7 +263,7 @@ app.get('/account/nickname', isActivatedUser, function (req, res) {
 });
 
 app.post('/account/nickname', isActivatedUser, function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `nick`=? WHERE `idusers`='" + req.user.id + "'", [req.body.nickname], function (err, result) {
+    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `nick`=? WHERE `idusers`=?", [req.body.nickname, req.user.id], function (err, result) {
         // Update the User object before redirecting
         var updatedUser = req.user;
         updatedUser.displayName = sqlConnection.escape(req.body.nickname).split("'")[1];

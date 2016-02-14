@@ -173,7 +173,10 @@ function createDatabase() {
             });
             conn.query(content, function (err, results) {
                 // Results of database creation
-                if (err) console.log(err);
+                if (err) {
+                    console.log(err);
+                    return false;
+                }
             });
             conn.end();
         });
