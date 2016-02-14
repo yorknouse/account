@@ -15,7 +15,10 @@ block content
                     td= val.session_id
                     td= val.expires
                     if JSON.parse(val.data).passport.user
-                        td= JSON.parse(val.data).passport.user.displayName
+                        if JSON.parse(val.data).passport.user.displayName
+                            td= JSON.parse(val.data).passport.user.displayName
+                        else
+                            td= None
                     else
                         td= None
                     td

@@ -6,6 +6,8 @@ block content
     
     form(name='nickform', method='post', action='/account/nickname')
         input(type='text', name='nickname', value=nickname)
+        noscript
+            button(class='btn btn-primary', type='submit') Save
     
     p
     | If you choose an inappropriate nickname then we may ask you to pick a new one or suspend your account.  Any changes made to your nickname will only apply to new comments; comments you've already made will use your old nickname.
