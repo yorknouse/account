@@ -36,26 +36,26 @@ exports.users = function (req, res) {
 };
 
 exports.usersSuspend = function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `activated`=0 WHERE `idusers`=?", [req.query.idusers], function (err, result) {
+    sqlConnection.query("UPDATE `users` SET `activated`=0 WHERE `idusers`=?", [req.query.idusers], function (err, result) {
         res.redirect(req.headers.referer);
     });
 };
 
 exports.usersUnsuspend = function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `activated`=2 WHERE `idusers`=?", [req.query.idusers], function (err, result) {
+    sqlConnection.query("UPDATE `users` SET `activated`=2 WHERE `idusers`=?", [req.query.idusers], function (err, result) {
         res.redirect(req.headers.referer);
     });
 };
 
 exports.usersDelete = function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `fname`='', `lname`='', `email`='', `activated`=0 WHERE `idusers`=?", [req.query.idusers], function (err, result) {
+    sqlConnection.query("UPDATE `users` SET `fname`='', `lname`='', `email`='', `activated`=0 WHERE `idusers`=?", [req.query.idusers], function (err, result) {
         req.session.dest = req.headers.referer;
         res.redirect('/admin/users/delete/google?idusers=' + req.query.idusers);
     });
 };
 
 exports.usersDeleteGoogle = function (req, res) {
-    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`googleauth` WHERE `idusers`=?", [req.query.idusers], function (err, result) {
+    sqlConnection.query("DELETE FROM `googleauth` WHERE `idusers`=?", [req.query.idusers], function (err, result) {
         res.redirect('/admin/users/delete/facebook?idusers=' + req.query.idusers);
     });
 };
@@ -67,13 +67,13 @@ exports.usersDeleteFacebook = function (req, res) {
 };
 
 exports.usersDeleteWordpress = function (req, res) {
-    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`wpauth` WHERE `idusers`=?", [req.query.idusers], function (err, result) {
+    sqlConnection.query("DELETE FROM `wpauth` WHERE `idusers`=?", [req.query.idusers], function (err, result) {
         res.redirect('/admin/users/delete/local?idusers=' + req.query.idusers);
     });
 };
 
 exports.usersDeleteLocal = function (req, res) {
-    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`localauth` WHERE `idusers`=?", [req.query.idusers], function (err, result) {
+    sqlConnection.query("DELETE FROM `localauth` WHERE `idusers`=?", [req.query.idusers], function (err, result) {
         res.redirect('/continue');
     });
 };
@@ -87,7 +87,7 @@ exports.usersEditGet = function (req, res) {
 };
 
 exports.usersEditPost = function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `fname`=?, `lname`=?, `nick`=?, `email`=?, `activated`=? WHERE `idusers`=?", [req.body.fname, req.body.lname, req.body.nick, req.body.email, req.body.activated, req.params.userid], function (err, result) {
+    sqlConnection.query("UPDATE `users` SET `fname`=?, `lname`=?, `nick`=?, `email`=?, `activated`=? WHERE `idusers`=?", [req.body.fname, req.body.lname, req.body.nick, req.body.email, req.body.activated, req.params.userid], function (err, result) {
         if (err !== null) {
             res.redirect('/admin/users/edit/' + req.params.idcontent + '?error=' + err.code);
         } else {
@@ -144,7 +144,7 @@ exports.apiPassword =  function (req, res) {
     if (req.body.newpassword !== req.body.confirmpassword) {
         res.status(403).send('Passwords do not match');
     } else {
-        sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`apiauth` SET `password`=? WHERE `idapiauth`=?", [md5(req.body.newpassword), req.query.idapiauth], function (err, result) {
+        sqlConnection.query("UPDATE `apiauth` SET `password`=? WHERE `idapiauth`=?", [md5(req.body.newpassword), req.query.idapiauth], function (err, result) {
             if (err !== null) {
                 res.status(500).send('Failed to update');
             } else {
@@ -155,7 +155,7 @@ exports.apiPassword =  function (req, res) {
 };
 
 exports.apiUrls = function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`apiauth` SET `urls`=? WHERE `idapiauth`=?", [req.body.longtext, req.query.idapiauth], function (err, result) {
+    sqlConnection.query("UPDATE `apiauth` SET `urls`=? WHERE `idapiauth`=?", [req.body.longtext, req.query.idapiauth], function (err, result) {
         if (err !== null) {
             res.status(500).send('Failed to update');
         } else {
@@ -165,7 +165,7 @@ exports.apiUrls = function (req, res) {
 };
 
 exports.apiDelete = function (req, res) {
-    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`apiauth` WHERE `idapiauth`=?", [req.query.idapiauth], function (err, result) {
+    sqlConnection.query("DELETE FROM `apiauth` WHERE `idapiauth`=?", [req.query.idapiauth], function (err, result) {
         res.redirect(req.headers.referer);
     });
 };
@@ -178,7 +178,7 @@ exports.apiCreatePost = function (req, res) {
     if (req.body.password !== req.body.confirmpassword) {
         res.redirect('/admin/api/create?error=PASS_MISMATCH');
     } else {
-        sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`apiauth` (`username`, `password`, `urls`) VALUES (?, ?, ?)", [req.body.username, md5(req.body.password), req.body.urls], function (err, result) {
+        sqlConnection.query("INSERT INTO `apiauth` (`username`, `password`, `urls`) VALUES (?, ?, ?)", [req.body.username, md5(req.body.password), req.body.urls], function (err, result) {
             if (err !== null) {
                 res.redirect('/admin/api/create?error=' + err.code);
             } else {
@@ -208,7 +208,7 @@ exports.contentCreateGet = function (req, res) {
 };
 
 exports.contentCreatePost =  function (req, res) {
-    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`content` (`shortname`, `description`, `logout`, `login`) VALUES (?, ?, ?, ?)", [req.body.shortname, req.body.description, req.body.logout, req.body.login], function (err, result) {
+    sqlConnection.query("INSERT INTO `content` (`shortname`, `description`, `logout`, `login`) VALUES (?, ?, ?, ?)", [req.body.shortname, req.body.description, req.body.logout, req.body.login], function (err, result) {
         if (err !== null) {
             res.redirect('/admin/content/create?error=' + err.code);
         } else {
@@ -226,7 +226,7 @@ exports.contentEditGet = function (req, res) {
 };
 
 exports.contentEditPost = function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`content` SET `shortname`=?, `description`=?, `logout`=?, `login`=? WHERE `idcontent`=?", [req.body.shortname, req.body.description, req.body.logout, req.body.login, req.params.idcontent], function (err, result) {
+    sqlConnection.query("UPDATE `content` SET `shortname`=?, `description`=?, `logout`=?, `login`=? WHERE `idcontent`=?", [req.body.shortname, req.body.description, req.body.logout, req.body.login, req.params.idcontent], function (err, result) {
         if (err !== null) {
             res.redirect('/admin/content/edit/' + req.params.idcontent + '?error=' + err.code);
         } else {
@@ -236,7 +236,7 @@ exports.contentEditPost = function (req, res) {
 };
 
 exports.contentDelete = function (req, res) {
-    sqlConnection.query("DELETE FROM `" + config.mysqlDatabase + "`.`content` WHERE `idcontent`=?", [req.query.idcontent], function (err, result) {
+    sqlConnection.query("DELETE FROM `content` WHERE `idcontent`=?", [req.query.idcontent], function (err, result) {
         res.redirect(req.headers.referer);
     });
 };
@@ -261,7 +261,7 @@ exports.reportCreateGet = function (req, res) {
 };
 
 exports.reportCreatePost = function (req, res) {
-    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`report` (`type`, `source`, `item`, `highlevel`, `details`, `userid`) VALUES (?, ?, ?, ?, ?, ?)", [req.body.type.replace(/(<([^>]+)>)/ig,""), req.body.source.replace(/(<([^>]+)>)/ig,""), req.body.item.replace(/(<([^>]+)>)/ig,""), parseInt(req.body.highlevel), (req.body.details==null)?null:req.body.details.replace(/(<([^>]+)>)/ig,""), (req.body.userid=='')?null:parseInt(req.body.userid)], function (err, result) {
+    sqlConnection.query("INSERT INTO `report` (`type`, `source`, `item`, `highlevel`, `details`, `userid`) VALUES (?, ?, ?, ?, ?, ?)", [req.body.type.replace(/(<([^>]+)>)/ig,""), req.body.source.replace(/(<([^>]+)>)/ig,""), req.body.item.replace(/(<([^>]+)>)/ig,""), parseInt(req.body.highlevel), (req.body.details==null)?null:req.body.details.replace(/(<([^>]+)>)/ig,""), (req.body.userid=='')?null:parseInt(req.body.userid)], function (err, result) {
         if (err === null) {
             // Success
             res.redirect('/admin/report/item/' + result.insertId);
@@ -281,7 +281,7 @@ exports.reportItemGet = function (req, res) {
 };
 
 exports.reportItemPost = function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`report` SET `notes`=?, `status`=? WHERE `idreport`=?", [req.body.notes, req.body.status, req.params.reportid], function (err, result) {
+    sqlConnection.query("UPDATE `report` SET `notes`=?, `status`=? WHERE `idreport`=?", [req.body.notes, req.body.status, req.params.reportid], function (err, result) {
         if (err !== null) {
             res.redirect('/admin/report/item/' + req.params.reportid + '?error=' + err.code);
         } else {

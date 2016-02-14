@@ -27,7 +27,7 @@ exports.googleStrategy = new GoogleStrategy({
 });
 
 exports.googleCallback = function (req, res) {
-    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`googleauth` (`googid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.account.id, req.user.id, req.account.emails[0].value], function (err, result) {
+    sqlConnection.query("INSERT INTO `googleauth` (`googid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.account.id, req.user.id, req.account.emails[0].value], function (err, result) {
         if (err !== null) {
             // Should not be reached
             res.redirect('/connect?error=1');
@@ -59,7 +59,7 @@ exports.facebookCallback = function (req, res) {
     if (!req.account.emails || req.account.emails.length == 0 || req.account.emails[0].value.indexOf('@') == -1) {
         res.redirect('/connect/facebook/error');
     } else {
-        sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`fbauth` (`fbid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.account.id, req.user.id, req.account.emails[0].value], function (err, result) {
+        sqlConnection.query("INSERT INTO `fbauth` (`fbid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.account.id, req.user.id, req.account.emails[0].value], function (err, result) {
             if (err !== null) {
                 // Should not be reached
                 res.redirect('/connect?error=1');

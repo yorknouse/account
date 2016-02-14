@@ -62,7 +62,7 @@ exports.googleContinue = function(req, res){
         });
     } else {
         // Provider is Google, account needs to be created
-        sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`users` (`fname`, `lname`, `email`, `activated`, `lastLogin`) VALUES (?, ?, ?, '2', NOW())", [req.user.name.givenName, req.user.name.familyName, req.user.emails[0].value], function (err, result) {
+        sqlConnection.query("INSERT INTO `users` (`fname`, `lname`, `email`, `activated`, `lastLogin`) VALUES (?, ?, ?, '2', NOW())", [req.user.name.givenName, req.user.name.familyName, req.user.emails[0].value], function (err, result) {
             if (err === null) {
                 req.login({'provider':'nouse-transition','id':result.insertId, '_googleId':req.user.id, 'emails':[{'value':req.user.emails[0].value}]}, function(err) {
                     res.redirect('/login/google/link');
@@ -76,7 +76,7 @@ exports.googleContinue = function(req, res){
 };
 
 exports.googleLink = function(req, res) {
-    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`googleauth` (`googid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.user._googleId, req.user.id, req.user.emails[0].value], function (err, result) {
+    sqlConnection.query("INSERT INTO `googleauth` (`googid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.user._googleId, req.user.id, req.user.emails[0].value], function (err, result) {
         if (err !== null) {
             // Should not be reached
             res.redirect('/logout');
@@ -119,7 +119,7 @@ exports.facebookContinue = function(req, res){
             req.logout();
             res.redirect('/login/facebook/error');
         } else {
-            sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`users` (`fname`, `lname`, `email`, `activated`, `lastLogin`) VALUES (?, ?, ?, '2', NOW())", [req.user.name.givenName, req.user.name.familyName, req.user.emails[0].value], function (err, result) {
+            sqlConnection.query("INSERT INTO `users` (`fname`, `lname`, `email`, `activated`, `lastLogin`) VALUES (?, ?, ?, '2', NOW())", [req.user.name.givenName, req.user.name.familyName, req.user.emails[0].value], function (err, result) {
                 if (err === null) {
                     req.login({'provider':'nouse-transition','id':result.insertId, '_fbId':req.user.id, 'emails':[{'value':req.user.emails[0].value}]}, function(err) {
                         res.redirect('/login/facebook/link');
@@ -134,7 +134,7 @@ exports.facebookContinue = function(req, res){
 };
 
 exports.facebookLink = function(req, res) {
-    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`fbauth` (`fbid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.user._fbId, req.user.id, req.user.emails[0].value], function (err, result) {
+    sqlConnection.query("INSERT INTO `fbauth` (`fbid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.user._fbId, req.user.id, req.user.emails[0].value], function (err, result) {
         if (err !== null) {
             // Should not be reached
             res.redirect('/logout');
@@ -184,7 +184,7 @@ exports.wordpressContinue = function(req, res){
         });
     } else {
         // Provider is Wordpress, account needs to be created
-        sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`users` (`fname`, `lname`, `email`, `activated`, `lastLogin`) VALUES (?, ?, ?, '2', NOW())", [req.user.name.givenName, req.user.name.familyName, req.user.emails[0].value], function (err, result) {
+        sqlConnection.query("INSERT INTO `users` (`fname`, `lname`, `email`, `activated`, `lastLogin`) VALUES (?, ?, ?, '2', NOW())", [req.user.name.givenName, req.user.name.familyName, req.user.emails[0].value], function (err, result) {
             if (err === null) {
                 req.login({'provider':'nouse-transition','id':result.insertId, '_wpId':req.user.id, 'emails':[{'value':req.user.emails[0].value}]}, function(err) {
                     res.redirect('/login/wordpress/link');
@@ -198,7 +198,7 @@ exports.wordpressContinue = function(req, res){
 };
 
 exports.wordpressLink = function(req, res) {
-    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`wpauth` (`wpid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.user._wpId, req.user.id, req.user.emails[0].value], function (err, result) {
+    sqlConnection.query("INSERT INTO `wpauth` (`wpid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.user._wpId, req.user.id, req.user.emails[0].value], function (err, result) {
         if (err !== null) {
             // Should not be reached
             res.redirect('/logout');
@@ -249,7 +249,7 @@ exports.registerGet = function (req, res) {
 
 exports.registerPost = function (req, res, next) {
     if (req.body.password === req.body.confirm) {
-        sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`users` (`fname`, `lname`, `email`, `lastLogin`) VALUES (?, ?, ?, NOW())", [req.body.fname, req.body.lname, req.body.username],function (err, result) {
+        sqlConnection.query("INSERT INTO `users` (`fname`, `lname`, `email`, `lastLogin`) VALUES (?, ?, ?, NOW())", [req.body.fname, req.body.lname, req.body.username],function (err, result) {
             if (err === null) {
                 req.login({'provider':'nouse-transition','id':result.insertId}, function(err) {
                     return next();
@@ -267,7 +267,7 @@ exports.registerPost = function (req, res, next) {
 exports.registerLink = function (req, res, next) {
     var salt = randomstring.generate(30);
     var activationcode = randomstring.generate({length: 8, charset: 'numeric'});
-    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`localauth` (`email`, `password`, `salt`, `idusers`, `activationcode`) VALUES (?, ?, ?, ?, ?)", [req.body.username, md5(req.body.password + salt), salt, req.user.id, activationcode], function (err, result) {
+    sqlConnection.query("INSERT INTO `localauth` (`email`, `password`, `salt`, `idusers`, `activationcode`) VALUES (?, ?, ?, ?, ?)", [req.body.username, md5(req.body.password + salt), salt, req.user.id, activationcode], function (err, result) {
         if (err === null) {
             var email = new sendgrid.Email({
                 "to": req.body.username.replace(/(<([^>]+)>)/ig,""),
@@ -318,7 +318,7 @@ exports.registerActivatePost = function (req, res, next) {
 };
 
 exports.registerActivateConfirm = function (req, res) {
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `activated`='2' WHERE `idusers`=?", [req.user.id], function (err, result) {
+    sqlConnection.query("UPDATE `users` SET `activated`='2' WHERE `idusers`=?", [req.user.id], function (err, result) {
         req.user._activated = 2;
         res.redirect('/continue');
     });
@@ -331,7 +331,7 @@ exports.login = function (req, res) {
 
 exports.continue = function(req, res) {
     // Update last login and continue
-    sqlConnection.query("UPDATE `" + config.mysqlDatabase + "`.`users` SET `lastLogin`=NOW() WHERE `idusers`='" + req.user.id + "'", function (err, result) {
+    sqlConnection.query("UPDATE `users` SET `lastLogin`=NOW() WHERE `idusers`='" + req.user.id + "'", function (err, result) {
         res.redirect('/continue');
     });
 };

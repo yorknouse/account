@@ -25,7 +25,7 @@ exports.submit = function (req, res) {
     if (req.session.report.details == '') {
         req.session.report.details = null;
     }
-    sqlConnection.query("INSERT INTO `" + config.mysqlDatabase + "`.`report` (`type`, `source`, `item`, `highlevel`, `details`, `userid`) VALUES (?, ?, ?, ?, ?, ?)", [req.session.report.type.replace(/(<([^>]+)>)/ig,""), req.session.report.source.replace(/(<([^>]+)>)/ig,""), req.session.report.item.replace(/(<([^>]+)>)/ig,""), parseInt(req.session.report.highlevel), (req.session.report.details==null)?null:req.session.report.details.replace(/(<([^>]+)>)/ig,""), (req.session.report.userid==null)?null:parseInt(req.session.report.userid)], function (err, result) {
+    sqlConnection.query("INSERT INTO `report` (`type`, `source`, `item`, `highlevel`, `details`, `userid`) VALUES (?, ?, ?, ?, ?, ?)", [req.session.report.type.replace(/(<([^>]+)>)/ig,""), req.session.report.source.replace(/(<([^>]+)>)/ig,""), req.session.report.item.replace(/(<([^>]+)>)/ig,""), parseInt(req.session.report.highlevel), (req.session.report.details==null)?null:req.session.report.details.replace(/(<([^>]+)>)/ig,""), (req.session.report.userid==null)?null:parseInt(req.session.report.userid)], function (err, result) {
         if (err === null) {
             // Success
             // Send a message to alert the team about the report
