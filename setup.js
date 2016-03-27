@@ -113,7 +113,7 @@ function verifyConfig() {
         console.log('Terms file not set');
         return false;
     }
-    fs.access(config.termsFile, fs.F_OK, function (err) {
+    /*fs.access(config.termsFile, fs.F_OK, function (err) {
         if (err) {
             console.log('Unable to find terms file');
             return false;
@@ -124,7 +124,7 @@ function verifyConfig() {
             console.log('Unable to read terms file');
             return false;
         }
-    });
+    });*/
     fs.readFile(config.termsFile, 'utf8', function (err, content) {
         if (err) {
             console.log('Error reading terms file');
@@ -142,11 +142,11 @@ function verifyConfig() {
 
 function createDatabase() {
     // Create the database based on a series of tests
-    fs.access('dbsetup.sql', fs.R_OK, function (err) {
+    /*fs.access('dbsetup.sql', fs.R_OK, function (err) {
         if (err) {
             console.log('Unable to read database setup script');
             return false;
-        }
+        }*/
         fs.readFile('dbsetup.sql', 'utf8', function (err, content) {
             if (err) {
                 console.log('Error reading database setup script');
@@ -180,7 +180,7 @@ function createDatabase() {
             });
             conn.end();
         });
-    })
+    //});
     return true;
 }
 

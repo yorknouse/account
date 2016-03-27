@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`idusers`),
   UNIQUE INDEX `idusers_UNIQUE` (`idusers` ASC));
   
-CREATE TABLE IF NOT EXISTS `googleAuth` (
+CREATE TABLE IF NOT EXISTS `googleauth` (
     `googid` VARCHAR(45) NOT NULL,
     `idusers` INT NOT NULL,
     `email` VARCHAR(150) NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `localauth` (
   PRIMARY KEY (`email`),
   UNIQUE INDEX `idusers_UNIQUE` (`idusers` ASC));
   
-CREATE TABLE IF NOT EXISTS `fbAuth` (
+CREATE TABLE IF NOT EXISTS `fbauth` (
     `fbid` VARCHAR(45) NOT NULL,
     `idusers` INT NOT NULL,
     `email` VARCHAR(150) NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS `fbAuth` (
     UNIQUE INDEX `fbid_UNIQUE` (`fbid` ASC),
     UNIQUE INDEX `email_UNIQUE` (`email` ASC));
 
-CREATE TABLE IF NOT EXISTS `wpAuth` (
+CREATE TABLE IF NOT EXISTS `wpauth` (
     `wpid` VARCHAR(10) NOT NULL,
     `idusers` INT NOT NULL,
     `email` VARCHAR(150) NOT NULL,
