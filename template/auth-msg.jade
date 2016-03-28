@@ -14,7 +14,7 @@ block content
         | function na_receivemsg(event) {
         |   var origin = '#{scheme}://#{sitename}';
         |   var port = '#{port}';
-        |   if (port !== '') origin += ':' + port;
+        |   if (port !== 'undefined') origin += ':' + port;
         |   if (origin !== event.origin) return;
         |   event.source.postMessage('CONFIRM_LOGIN', event.origin);
         |   window.close();
