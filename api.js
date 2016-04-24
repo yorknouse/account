@@ -27,7 +27,7 @@ exports.auth = function (req, res, next) {
                 if (rows[0].urls !== null) {
                     referers = rows[0].urls.split(',');
                 }
-                if (referers === null || (req.headers.referer && referers.indexOf(req.headers.referer.split('/')[2]) !== -1)) {
+                if (referers === null || referers === "" || (req.headers.referer && referers.indexOf(req.headers.referer.split('/')[2]) !== -1)) {
                     next();
                 } else {
                     return authUnauth(res);

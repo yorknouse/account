@@ -21,7 +21,7 @@ exports.auth = function(req, res, next) {
             if (rows[0].urls !== null) {
                 referers = rows[0].urls.split(',');
             }
-            if (referers === null || referers.indexOf(referer) !== -1) {
+            if (referers === null || referers === "" || referers.indexOf(referer) !== -1) {
                 next();
             } else {
                 delete req.session.auth;
