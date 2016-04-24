@@ -9,7 +9,7 @@ var sqlConnection = db.sqlConnection(),
 // API auth
 exports.auth = function (req, res, next) {
     var authorization = req.headers.authorization;
-    if (!authorization) return apiAuthUnauth(res);
+    if (!authorization) return authUnauth(res);
     
     var parts = authorization.split(' ');
     if (parts.length !== 2) return next(error(400));
