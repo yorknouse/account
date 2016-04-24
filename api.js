@@ -71,7 +71,7 @@ exports.userEmails = function (req, res) {
         if (err == null && rows.length > 0) {
             var emails = [];
             for (var row in rows) {
-                if (!req.params.domain || rows[row].email.endsWith(req.params.domain)) {
+                if (!req.params.domain || rows[row].email.indexOf(req.params.domain) > 0) {
                     emails.push(rows[row].email);
                 }
             }
