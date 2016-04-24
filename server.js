@@ -319,6 +319,7 @@ app.get('/content/:shortname', content.auth, content.shortnameGet);
 
 // Auth (Allow sites to start authentication flow)
 app.get('/auth/:scheme/:sitename/:port/msg', auth.auth, isActivatedUser, auth.msg);
+app.get('/auth/:scheme/:sitename/:port/rdr', auth.auth, isActivatedUser, auth.rdr);
 
 // Reporting system
 app.get('/report/new', report.new);

@@ -43,3 +43,19 @@ exports.msg = function (req, res) {
     delete req.session.auth;
     delete req.session.referer;
 };
+
+// Redirect
+exports.rdr = function (req, res) {
+    var redirectUrl = req.params.scheme + '://' + req.params.sitename
+    if (req.params.port !== 'undefined') {
+        redirectUrl += ':' + req.params.port;
+    }
+    redirectUrl += '/';
+    if (req.query.path) {
+        redirectUrl += req.query.path;
+    }
+    redirectUrl += '?token=' + req.session.id;
+    res.redirect(redirectUrl)
+    delete req.session.auth;
+    delete req.session.referer;
+};
