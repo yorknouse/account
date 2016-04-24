@@ -66,6 +66,24 @@ exports.user = function (req, res) {
     });
 };
 
+exports.userEmails = function (req, res) {
+    sqlConnection.query('(SELECT `email` FROM `googleauth` WHERE `idusers`=?) UNION (SELECT `email` FROM `fbauth` WHERE `idusers`=?) UNION (SELECT `email` FROM `localauth` WHERE `idusers`=?) UNION (SELECT `email` FROM `wpauth` WHERE `idusers`=?)', [req.params.uid, req.params.uid, req.params.uid, req.params.uid], function (err, rows, fields) {
+        if (err == null && rows.length > 0) {
+            var emails = [];
+            for (var row in rows) {
+                if (!req.params.domain || rows[row].email.endsWith(req.params.domain)) {
+                    emails.push(rows[row].email);
+                }
+            }
+            res.type('application/json');
+            res.send(emails);
+        } else {
+            res.statusCode = 404;
+            res.end('Not found');
+        }
+    });
+};
+
 exports.name = function (req, res) {
     res.type('application/json');
     res.send({'id':req.user.id, 'name':req.user.name, 'displayName':req.user.displayName});

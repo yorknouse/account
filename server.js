@@ -308,6 +308,8 @@ app.post('/admin/report/item/:reportid', isActivatedUser, isAdminUser, admin.rep
 // API calls for websites
 app.get('/api/user', api.auth, isActivatedUser, api.currentUser);
 app.get('/api/user/:uid', api.auth, api.user);
+app.get('/api/user/:uid/emails', api.auth, api.userEmails)
+app.get('/api/user/:uid/emails/:domain', api.auth, api.userEmails)
 app.get('/api/name', api.auth, isActivatedUser, api.name);
 app.get('/api/session/:sessionid', api.auth, api.session);
 
