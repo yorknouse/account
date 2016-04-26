@@ -41,6 +41,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookie());
 app.use(bodyparser.urlencoded({'extended': true}));
 
+http.globalAgent.maxSockets = 50; //Infinity;
+
 // Set-up database access
 var sqlConnection = db.sqlConnection();
 
