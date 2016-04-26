@@ -6,8 +6,6 @@ var config = require('./config'),
 var fs = require('fs'),
     md5 = require('js-md5');
 
-var sqlConnection = db.sqlConnection();
-
 exports.abandon = function (req, res) {
     res.render('abandon');
 };
@@ -22,6 +20,7 @@ exports.terms = function (req, res) {
 };
 
 exports.termsAccept = function (req, res) {
+    var sqlConnection = db.sqlConnection();
     sqlConnection.query("UPDATE `users` SET `activated`='3' WHERE `idusers`=?", [req.user.id], function (err, result) {
         // Update the User object before redirecting
         var updatedUser = req.user;
@@ -34,13 +33,16 @@ exports.termsAccept = function (req, res) {
             }
         });
     });
+    sqlConnection.end();
 };
 
 exports.termsReject = function (req, res) {
+    var sqlConnection = db.sqlConnection();
     sqlConnection.query("DELETE FROM `users` WHERE `idusers`=?", [req.user.id], function (err, result) {
         req.logout();
         res.redirect('/signup/abandon');
     });
+    sqlConnection.end();
 };
 
 exports.validate = function (req, res) {
@@ -51,6 +53,7 @@ exports.activate = function (req, res, next) {
     if(!req.query.id || !req.query.activate) {
         res.redirect('/login');
     } else {
+        var sqlConnection = db.sqlConnection();
         sqlConnection.query('SELECT * FROM `localauth` WHERE `idusers`=?', [req.query.id], function (err, rows, fields) {
             if (rows.length > 0) {
                 if (md5(rows[0].activationcode) === req.query.activate) {
@@ -63,14 +66,17 @@ exports.activate = function (req, res, next) {
                 res.redirect('/logout');
             }
         });
+        sqlConnection.end();
     }
 };
 
 exports.activateConfirm = function (req, res) {
+    var sqlConnection = db.sqlConnection();
     sqlConnection.query("UPDATE `users` SET `activated`='2' WHERE `idusers`=?", [req.query.id], function (err, result) {
         if (req.user && req.user.id == req.query.id) {
             req.user._activated = 2;
         }
         res.redirect('/continue');
     });
+    sqlConnection.end();
 };

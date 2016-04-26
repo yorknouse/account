@@ -107,6 +107,7 @@ function verifyConfig() {
             return false;
         }
     });
+    conn.end();
     
     // Files
     if (!config.termsFile || config.termsFile == '') {

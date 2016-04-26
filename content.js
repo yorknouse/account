@@ -5,8 +5,6 @@ var config = require('./config'),
 
 var jade = require('jade');
 
-var sqlConnection = db.sqlConnection();
-
 // Auth
 exports.auth = function (req, res, next) {
     var authorization = req.headers.authorization;
@@ -19,6 +17,7 @@ exports.auth = function (req, res, next) {
     if ('Public' != scheme) return next(error(400));
     var user = credentials;
     
+    var sqlConnection = db.sqlConnection();
     sqlConnection.query('SELECT * FROM `apiauth` WHERE `username`=?', [user], function (err, rows, fields) {
         if (rows.length > 0) {
             var referers = null;
@@ -38,6 +37,7 @@ exports.auth = function (req, res, next) {
             return authUnauth(res);
         }
     });
+    sqlConnection.end();
 };
 
 var authUnauth = function (res, realm) {
@@ -55,6 +55,7 @@ exports.shortnameOptions = function (req, res) {
 };
 
 exports.shortnameGet = function (req, res) {
+    var sqlConnection = db.sqlConnection();
     sqlConnection.query('SELECT * FROM `content` WHERE `shortname`=?', [req.params.shortname], function (err, rows, fields) {
         if (rows.length > 0) {
             if (req.isAuthenticated() && req.user._activated > 2 && rows[0].login !== '') {
@@ -74,4 +75,5 @@ exports.shortnameGet = function (req, res) {
             return error(404);
         }
     });
+    sqlConnection.end();
 };

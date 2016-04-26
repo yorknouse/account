@@ -3,11 +3,11 @@
 var config = require('./config'),
     db = require('./db');
 
-var sqlConnection = db.sqlConnection(),
-    md5 = require('js-md5');
+var md5 = require('js-md5');
 
 // API auth
 exports.auth = function (req, res, next) {
+    var sqlConnection = db.sqlConnection();
     var authorization = req.headers.authorization;
     if (!authorization) return authUnauth(res);
     
@@ -39,6 +39,7 @@ exports.auth = function (req, res, next) {
             return authUnauth(res);
         }
     });
+    sqlConnection.end();
 };
 
 var authUnauth = function (res, realm) {
@@ -54,6 +55,7 @@ exports.currentUser = function (req, res) {
 };
 
 exports.user = function (req, res) {
+    var sqlConnection = db.sqlConnection();
     // As this exposes a username and email for anyone with a user id, it should only be made from a server
     sqlConnection.query('SELECT * FROM `users` WHERE `idusers`=?', [req.params.uid], function (err, rows, fields) {
         if (rows.length > 0) {
@@ -64,9 +66,11 @@ exports.user = function (req, res) {
             res.end('Not found');
         }
     });
+    sqlConnection.end();
 };
 
 exports.userEmails = function (req, res) {
+    var sqlConnection = db.sqlConnection();
     sqlConnection.query('(SELECT `email` FROM `googleauth` WHERE `idusers`=?) UNION (SELECT `email` FROM `fbauth` WHERE `idusers`=?) UNION (SELECT `email` FROM `localauth` WHERE `idusers`=?) UNION (SELECT `email` FROM `wpauth` WHERE `idusers`=?)', [req.params.uid, req.params.uid, req.params.uid, req.params.uid], function (err, rows, fields) {
         if (err == null && rows.length > 0) {
             var emails = [];
@@ -82,6 +86,7 @@ exports.userEmails = function (req, res) {
             res.end('Not found');
         }
     });
+    sqlConnection.end();
 };
 
 exports.name = function (req, res) {
@@ -90,6 +95,7 @@ exports.name = function (req, res) {
 };
 
 exports.session = function (req, res) {
+    var sqlConnection = db.sqlConnection();
     sqlConnection.query('SELECT * FROM `sessions` WHERE `session_id`=?', [req.params.sessionid], function (err, rows, fields) {
         if (rows.length > 0) {
             res.type('application/json');
@@ -109,4 +115,5 @@ exports.session = function (req, res) {
             res.end("{'error': 'Not found'}");
         }
     });
+    sqlConnection.end();
 };

@@ -3,10 +3,9 @@
 var config = require('./config'),
     db = require('./db');
 
-var sqlConnection = db.sqlConnection();
-
 // Auth
 exports.auth = function(req, res, next) {
+    var sqlConnection = db.sqlConnection();
     var auth = req.session.auth;
     if (req.query && req.query.apiuser) {
         auth = req.session.auth = new Buffer(req.query.apiuser, 'base64').toString()
@@ -35,6 +34,7 @@ exports.auth = function(req, res, next) {
             res.statusCode = 404;
         }
     });
+    sqlConnection.end();
 };
 
 // Msg
