@@ -19,6 +19,7 @@ exports.auth = function (req, res, next) {
     
     var sqlConnection = db.sqlConnection();
     sqlConnection.query('SELECT * FROM `apiauth` WHERE `username`=?', [user], function (err, rows, fields) {
+        sqlConnection.end();
         if (rows.length > 0) {
             var referers = null;
             if (rows[0].urls !== null) {
@@ -37,7 +38,6 @@ exports.auth = function (req, res, next) {
             return authUnauth(res);
         }
     });
-    sqlConnection.end();
 };
 
 var authUnauth = function (res, realm) {
@@ -57,6 +57,7 @@ exports.shortnameOptions = function (req, res) {
 exports.shortnameGet = function (req, res) {
     var sqlConnection = db.sqlConnection();
     sqlConnection.query('SELECT * FROM `content` WHERE `shortname`=?', [req.params.shortname], function (err, rows, fields) {
+        sqlConnection.end();
         if (rows.length > 0) {
             if (req.isAuthenticated() && req.user._activated > 2 && rows[0].login !== '') {
                 // Show logged-in view
@@ -75,5 +76,4 @@ exports.shortnameGet = function (req, res) {
             return error(404);
         }
     });
-    sqlConnection.end();
 };

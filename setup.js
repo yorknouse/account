@@ -101,13 +101,13 @@ function verifyConfig() {
         port: config.mysqlPort
     });
     conn.connect(function (err) {
+        conn.end();
         if (err) {
             console.log('Unable to connect to database');
             console.log(err);
             return false;
         }
     });
-    conn.end();
     
     // Files
     if (!config.termsFile || config.termsFile == '') {
@@ -174,12 +174,12 @@ function createDatabase() {
             });
             conn.query(content, function (err, results) {
                 // Results of database creation
+                conn.end();
                 if (err) {
                     console.log(err);
                     return false;
                 }
             });
-            conn.end();
         });
     //});
     return true;

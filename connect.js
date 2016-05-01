@@ -16,6 +16,7 @@ exports.googleStrategy = new GoogleStrategy({
     //Verify the callback
     var sqlConnection = db.sqlConnection();
     sqlConnection.query('SELECT * FROM `googleauth` WHERE `googid`=?', [profile.id], function (err, rows, fields) {
+        sqlConnection.end();
         if (rows.length > 0) {
             return done(null, false); // Account already in use so return false
         }
@@ -23,12 +24,12 @@ exports.googleStrategy = new GoogleStrategy({
         // We'll associate it with the current account next
         return done(null, profile);
     });
-    sqlConnection.end();
 });
 
 exports.googleCallback = function (req, res) {
     var sqlConnection = db.sqlConnection();
     sqlConnection.query("INSERT INTO `googleauth` (`googid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.account.id, req.user.id, req.account.emails[0].value], function (err, result) {
+        sqlConnection.end();
         if (err !== null) {
             // Should not be reached
             res.redirect('/connect?error=1');
@@ -36,7 +37,6 @@ exports.googleCallback = function (req, res) {
             res.redirect('/connect/continue');
         }
     });
-    sqlConnection.end();
 };
 
 // Connect code for Facebook
@@ -49,6 +49,7 @@ exports.facebookStrategy = new FacebookStrategy({
     // Verify the callback
     var sqlConnection = db.sqlConnection();
     sqlConnection.query('SELECT * FROM `fbauth` WHERE `fbid`=?', [profile.id], function (err, rows, fields) {
+        sqlConnection.end();
         if (rows.length > 0) {
             return done(null, false); // Account already in use so return false
         }
@@ -56,7 +57,6 @@ exports.facebookStrategy = new FacebookStrategy({
         // We'll associate it with the current account next
         return done(null, profile);
     });
-    sqlConnection.end();
 });
 
 exports.facebookCallback = function (req, res) {
@@ -65,6 +65,7 @@ exports.facebookCallback = function (req, res) {
     } else {
         var sqlConnection = db.sqlConnection();
         sqlConnection.query("INSERT INTO `fbauth` (`fbid`, `idusers`, `email`) VALUES (?, ?, ?)", [req.account.id, req.user.id, req.account.emails[0].value], function (err, result) {
+            sqlConnection.end();
             if (err !== null) {
                 // Should not be reached
                 res.redirect('/connect?error=1');
@@ -72,7 +73,6 @@ exports.facebookCallback = function (req, res) {
                 res.redirect('/connect/continue');
             }
         });
-        sqlConnection.end();
     }
 };
 

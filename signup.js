@@ -22,6 +22,7 @@ exports.terms = function (req, res) {
 exports.termsAccept = function (req, res) {
     var sqlConnection = db.sqlConnection();
     sqlConnection.query("UPDATE `users` SET `activated`='3' WHERE `idusers`=?", [req.user.id], function (err, result) {
+        sqlConnection.end();
         // Update the User object before redirecting
         var updatedUser = req.user;
         updatedUser._activated = 3;
@@ -33,16 +34,15 @@ exports.termsAccept = function (req, res) {
             }
         });
     });
-    sqlConnection.end();
 };
 
 exports.termsReject = function (req, res) {
     var sqlConnection = db.sqlConnection();
     sqlConnection.query("DELETE FROM `users` WHERE `idusers`=?", [req.user.id], function (err, result) {
+        sqlConnection.end();
         req.logout();
         res.redirect('/signup/abandon');
     });
-    sqlConnection.end();
 };
 
 exports.validate = function (req, res) {
@@ -55,6 +55,7 @@ exports.activate = function (req, res, next) {
     } else {
         var sqlConnection = db.sqlConnection();
         sqlConnection.query('SELECT * FROM `localauth` WHERE `idusers`=?', [req.query.id], function (err, rows, fields) {
+            sqlConnection.end();
             if (rows.length > 0) {
                 if (md5(rows[0].activationcode) === req.query.activate) {
                     return next();
@@ -66,17 +67,16 @@ exports.activate = function (req, res, next) {
                 res.redirect('/logout');
             }
         });
-        sqlConnection.end();
     }
 };
 
 exports.activateConfirm = function (req, res) {
     var sqlConnection = db.sqlConnection();
     sqlConnection.query("UPDATE `users` SET `activated`='2' WHERE `idusers`=?", [req.query.id], function (err, result) {
+        sqlConnection.end();
         if (req.user && req.user.id == req.query.id) {
             req.user._activated = 2;
         }
         res.redirect('/continue');
     });
-    sqlConnection.end();
 };

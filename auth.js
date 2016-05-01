@@ -15,6 +15,7 @@ exports.auth = function(req, res, next) {
         referer = req.session.referer = req.headers.referer.split('/')[2];
     }
     sqlConnection.query('SELECT * FROM `apiauth` WHERE `username`=?', [auth], function (err, rows, fields) {
+        sqlConnection.end();
         if (rows.length > 0) {
             var referers = null;
             if (rows[0].urls !== null) {
@@ -34,7 +35,6 @@ exports.auth = function(req, res, next) {
             res.statusCode = 404;
         }
     });
-    sqlConnection.end();
 };
 
 // Msg
